@@ -733,7 +733,7 @@ let steeringValue = 0;
 function reset() {
 
   crashed = false;
-  crashReason = "KOLLISION!";
+  crashReason = "";
   taskCompleted = false;
   steeringValue = 0;
 
@@ -869,12 +869,6 @@ function update() {
 
   updateTrailer();
 
-  if (checkTruckTrailerCollision()) {
-    crashed = true;
-    crashReason = "KOLLISION!";
-    truck.speed = 0;
-    restartBtn.style.display = "block";
-  }
 
 if (checkRoadMarkingViolation()) {
   crashed = true;
@@ -885,15 +879,27 @@ if (checkRoadMarkingViolation()) {
 
   truck.speed = 0;
   restartBtn.style.display = "block";
+  return;
 }
-  steerDisplay.innerText = "Lenkrad: " + Math.round(wheelAngle) + "°";
+
+if (checkTruckTrailerCollision()) {
+  crashed = true;
+  crashReason = "KOLLISION!";
+  truck.speed = 0;
+  restartBtn.style.display = "block";
+  return;
 }
+
+steerDisplay.innerText = "Lenkrad: " + Math.round(wheelAngle) + "°";
+}
+
 function localToWorld(obj, localX, localY) {
   return {
     x: obj.x + Math.cos(obj.angle) * localX - Math.sin(obj.angle) * localY,
     y: obj.y + Math.sin(obj.angle) * localX + Math.cos(obj.angle) * localY
   };
 }
+
 
 function getWheelTriggerPoints() {
   const points = [];
@@ -933,6 +939,27 @@ function drawWheelTriggerDebug() {
   ctx.save();
 
   for (const p of points) {
+
+// obere Linie
+if (p.y < markingLimits.topLimit && p.x >= 1100 && p.x <= 2700) {
+  markingViolationPoint = p;
+  crashReason = "MARKIERUNG ÜBERFAHREN!";
+  return true;
+}
+
+// untere linke Linie
+if (p.y > 1365 && p.x >= 1100 && p.x <= 1450) {
+  markingViolationPoint = p;
+  crashReason = "MARKIERUNG ÜBERFAHREN!";
+  return true;
+}
+
+// untere rechte Linie
+if (p.y > 1365 && p.x >= 2280 && p.x <= 2700) {
+  markingViolationPoint = p;
+  crashReason = "MARKIERUNG ÜBERFAHREN!";
+  return true;
+}
     const isViolation =
       markingViolationPoint &&
       Math.abs(p.x - markingViolationPoint.x) < 1 &&
@@ -950,6 +977,7 @@ function drawWheelTriggerDebug() {
 
   ctx.restore();
 }
+
 
 const markingLimits = {
   topLimit: 975,
