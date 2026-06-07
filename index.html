@@ -207,15 +207,17 @@ button {
 
 .speedPanel {
   grid-column: 2;
-  grid-row: 2;
+  grid-row: 1 / span 2;
 
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
   align-items: center;
+  justify-content: flex-start;
 
-  margin-top: -10px;
+  margin-top: -15px;
 }
+
+
   #restartBtn {
     top: 72% !important;
     font-size: 20px !important;
@@ -309,25 +311,25 @@ Neu starten
    
   </div>
 
-  <div class="speedPanel">
-    <div id="speedDisplay">Max. Geschwindigkeit: 4</div>
+<div class="speedPanel">
 
-
-    <input
-      type="range"
-      id="speedSlider"
-      min="1"
-      max="10"
-      value="4"
-    >
+  <div id="speedDisplay">
+    Max. Geschwindigkeit: 4
   </div>
-    <div style="margin-top:8px;">
-      <button id="followBtn">Zentrieren</button>
-    </div>
+
+  <input
+    type="range"
+    id="speedSlider"
+    min="1"
+    max="10"
+    value="4"
+  >
+
+  <button id="followBtn">
+    Zentrieren
+  </button>
 
 </div>
-
-
 
 
 
@@ -1454,24 +1456,6 @@ function drawCollisionOverlay() {
 
 ctx.save();
 
-ctx.globalAlpha = 0.25;
-ctx.fillStyle = "white";
-
-const isPortrait = canvas.height > canvas.width;
-
-ctx.font = isPortrait
-  ? "12px Arial"
-  : "16px Arial";
-
-ctx.textAlign = "right";
-
-ctx.fillText(
-  "© HptFw Lang",
-  canvas.width - 15,
-  30
-);
-
-ctx.restore();
 
 
 function drawSuccessOverlay() {
