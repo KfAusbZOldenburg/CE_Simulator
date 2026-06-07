@@ -829,11 +829,11 @@ function update() {
   );
 
   if (keys["a"]) {
-    wheelAngle -= 6;
+    wheelAngle -= 8;
   }
 
   if (keys["d"]) {
-    wheelAngle += 6;
+    wheelAngle += 8;
   }
 
   wheelAngle = Math.max(-maxWheelAngle, Math.min(maxWheelAngle, wheelAngle));
@@ -917,7 +917,7 @@ function getWheelTriggerPoints() {
   points.push(localToWorld(trailer, -80,  trailer.width / 3 + 10));
 
   // Anhänger Vorderachse / Drehschemelachse
-  const frontAxleX = trailer.length / 2 -5;
+  const frontAxleX = trailer.length / 2 - 2;
   const axleCenter = localToWorld(trailer, frontAxleX, 0);
 
   points.push({
@@ -1151,7 +1151,7 @@ function updateTrailer() {
   const hitchY =
     truck.y - Math.sin(truck.angle) * truck.length / 2;
 
-  const frontAxleOffset = trailer.length / 2 -5;
+  const frontAxleOffset = trailer.length / 2 - 2;
 
   // aktueller Drehschemelpunkt am Anhänger
   const currentFrontX =
@@ -1252,8 +1252,8 @@ function getDrawbarPolygon() {
   const hitchX = truck.x - Math.cos(truck.angle) * truck.length / 2;
   const hitchY = truck.y - Math.sin(truck.angle) * truck.length / 2;
 
-const axleX = trailer.frontAxleX ?? trailer.x + Math.cos(trailer.angle) * (trailer.length / 2 -5);
-const axleY = trailer.frontAxleY ?? trailer.y + Math.sin(trailer.angle) * (trailer.length / 2 -5);
+const axleX = trailer.frontAxleX ?? trailer.x + Math.cos(trailer.angle) * (trailer.length / 2 - 2);
+const axleY = trailer.frontAxleY ?? trailer.y + Math.sin(trailer.angle) * (trailer.length / 2 - 2);
 
   const width = 14;
 
@@ -1417,7 +1417,7 @@ function drawTrailer() {
   drawWheel(-80, -trailer.width / 3 - 10, 0);
   drawWheel(-80, trailer.width / 3 + 10, 0);
 
-  const frontAxleX = trailer.length / 2 -5;
+  const frontAxleX = trailer.length / 2 - 2;
   const axleAngle = trailer.drawbarAngle - trailer.angle;
 
   ctx.save();
@@ -1444,8 +1444,8 @@ function drawDrawbar() {
   const hitchX = truck.x - Math.cos(truck.angle) * truck.length / 2;
   const hitchY = truck.y - Math.sin(truck.angle) * truck.length / 2;
 
-const axleX = trailer.frontAxleX ?? trailer.x + Math.cos(trailer.angle) * (trailer.length / 2 -5);
-const axleY = trailer.frontAxleY ?? trailer.y + Math.sin(trailer.angle) * (trailer.length / 2 -5);
+const axleX = trailer.frontAxleX ?? trailer.x + Math.cos(trailer.angle) * (trailer.length / 2 - 2);
+const axleY = trailer.frontAxleY ?? trailer.y + Math.sin(trailer.angle) * (trailer.length / 2 -2);
 
 const pivotRadius = 19;
 
