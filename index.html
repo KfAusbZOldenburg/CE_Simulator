@@ -21,6 +21,8 @@
 
   pointer-events: none;
 }
+
+
 html, body {
   margin: 0;
   padding: 0;
@@ -40,6 +42,25 @@ h2 {
 p {
   margin: 2px 0 8px 0;
   font-size: 12px;
+}
+
+#coordBox {
+  position: fixed;
+  top: 45px;
+  right: 10px;
+  z-index: 99999;
+
+  background: rgba(0,0,0,0.75);
+  color: yellow;
+
+  padding: 5px 9px;
+  border-radius: 6px;
+
+  font-size: 14px;
+  font-family: monospace;
+  font-weight: bold;
+
+  pointer-events: none;
 }
 
 canvas {
@@ -207,7 +228,7 @@ button {
 
 .speedPanel {
   grid-column: 2;
-  grid-row: 1 / span 2;
+  grid-row: 2;
 
   display: flex;
   flex-direction: column;
@@ -259,6 +280,8 @@ button {
 <div id="watermark">
   © HptFw Lang
 </div>
+
+<div id="coordBox">X: 0 | Y: 0</div>
 
 <button id="restartBtn" style="
 display:none;
@@ -337,7 +360,7 @@ Neu starten
 <script>
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
-const coordBox = document.getElementById("coordBox");
+
 function resizeCanvas() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight - 170;
@@ -370,10 +393,28 @@ function screenToWorld(clientX, clientY) {
 }
 
 
+const coordBox = document.getElementById("coordBox");
+
+function updateCoordBox(clientX, clientY) {
+  const pos = screenToWorld(clientX, clientY);
+
+  coordBox.innerText =
+    "X: " + pos.x + " | Y: " + pos.y;
+}
+
 canvas.addEventListener("mousemove", (e) => {
-  const pos = screenToWorld(e.clientX, e.clientY);
-  coordBox.innerText = "X: " + pos.x + " | Y: " + pos.y;
+  updateCoordBox(e.clientX, e.clientY);
 });
+
+canvas.addEventListener("touchmove", (e) => {
+  if (e.touches.length === 1) {
+    updateCoordBox(
+      e.touches[0].clientX,
+      e.touches[0].clientY
+    );
+  }
+}, { passive: false });
+
 canvas.addEventListener("wheel", (e) => {
   e.preventDefault();
 
@@ -727,6 +768,8 @@ restartBtn.addEventListener("click", () => {
   restartBtn.style.display = "none";
 });
 
+crashReason = "";
+
 taskCompleted = false;
 
 function normalizeAngle(angle) {
@@ -833,13 +876,16 @@ function update() {
     restartBtn.style.display = "block";
   }
 
-  if (checkRoadMarkingViolation()) {
-    crashed = true;
+if (checkRoadMarkingViolation()) {
+  crashed = true;
+
+  if (!crashReason) {
     crashReason = "MARKIERUNG ÜBERFAHREN!";
-    truck.speed = 0;
-    restartBtn.style.display = "block";
   }
 
+  truck.speed = 0;
+  restartBtn.style.display = "block";
+}
   steerDisplay.innerText = "Lenkrad: " + Math.round(wheelAngle) + "°";
 }
 function localToWorld(obj, localX, localY) {
@@ -906,7 +952,7 @@ function drawWheelTriggerDebug() {
 }
 
 const markingLimits = {
-  topLimit: 865,
+  topLimit: 975,
   tolerance: 8,
 
   leftTop:    { x: 1450, y: 1365 },
@@ -1042,6 +1088,19 @@ function checkRoadMarkingViolation() {
     const rightX = getBoundaryXAtY(rightLine, p.y);
 
     const tireHalfWidth = 10;
+
+// Spielfeldgrenzen links/rechts
+if (p.x < -20) {
+  markingViolationPoint = p;
+  crashReason = "BEREICH VERLASSEN!";
+  return true;
+}
+
+if (p.x > 3500) {
+  markingViolationPoint = p;
+  crashReason = "BEREICH VERLASSEN!";
+  return true;
+}
 
 if (leftX !== null && p.x < leftX + tireHalfWidth - markingLimits.tolerance) {
   markingViolationPoint = p;
@@ -1424,40 +1483,52 @@ function drawCollisionOverlay() {
 
   if (crashReason === "MARKIERUNG ÜBERFAHREN!") {
 
-    ctx.fillText(
-      "Du hast die Begrenzung",
-      canvas.width / 2,
-      canvas.height / 2 - 20
-    );
+  ctx.fillText(
+    "Du hast die Begrenzung",
+    canvas.width / 2,
+    canvas.height / 2 - 20
+  );
 
-    ctx.fillText(
-      "der Aufgabe verlassen",
-      canvas.width / 2,
-      canvas.height / 2 + 20
-    );
+  ctx.fillText(
+    "der Aufgabe überfahren",
+    canvas.width / 2,
+    canvas.height / 2 + 20
+  );
 
-  } else {
+}
+else if (crashReason === "BEREICH VERLASSEN!") {
 
-    ctx.fillText(
-      "LKW hat den",
-      canvas.width / 2,
-      canvas.height / 2 - 20
-    );
+  ctx.fillText(
+    "Du hast den zulässigen",
+    canvas.width / 2,
+    canvas.height / 2 - 20
+  );
 
-    ctx.fillText(
-      "Anhänger berührt",
-      canvas.width / 2,
-      canvas.height / 2 + 20
-    );
-  }
+  ctx.fillText(
+    "Aufgabenbereich verlassen",
+    canvas.width / 2,
+    canvas.height / 2 + 20
+  );
+
+}
+else {
+
+  ctx.fillText(
+    "LKW hat den",
+    canvas.width / 2,
+    canvas.height / 2 - 20
+  );
+
+  ctx.fillText(
+    "Anhänger berührt",
+    canvas.width / 2,
+    canvas.height / 2 + 20
+  );
+
+}
 
   ctx.textAlign = "left";
 }
-
-ctx.save();
-
-
-
 function drawSuccessOverlay() {
 
   ctx.fillStyle = "rgba(0,0,0,0.55)";
@@ -1511,12 +1582,56 @@ function draw() {
 
 drawRoad();
 drawRoadTriggerDebug();
+
+
+
+
+
+
+ctx.save();
+
+ctx.strokeStyle = "white";
+ctx.lineWidth = 4;
+
+ctx.beginPath();
+ctx.moveTo(1100, 975);
+ctx.lineTo(2700, 975);
+
+ctx.stroke();
+
+ctx.restore();
+
+
+
+ctx.strokeStyle = "white";
+ctx.lineWidth = 4;
+
+// Obere Linie
+ctx.beginPath();
+ctx.moveTo(1100, 975);
+ctx.lineTo(2700, 975);
+ctx.stroke();
+
+// Linke waagerechte Linie
+ctx.beginPath();
+ctx.moveTo(1450, 1365);
+ctx.lineTo(1100, 1365);
+ctx.stroke();
+
+// Rechte waagerechte Linie
+ctx.beginPath();
+ctx.moveTo(2280, 1365);
+ctx.lineTo(2700, 1365);
+ctx.stroke();
+
 drawTrailer();
 drawDrawbar();
 drawTruck();
-//drawWheelTriggerDebug();
 
   ctx.restore();
+
+
+
 
   drawHud();
 
