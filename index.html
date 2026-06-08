@@ -662,7 +662,7 @@ function updateWheelVisual() {
  document.getElementById("steeringWheelImg").style.transform =
   "rotate(" + wheelAngle + "deg)";
   steeringValue = wheelAngle / maxWheelAngle;
-  truck.steeringAngle = steeringValue * 0.6;
+  truck.steeringAngle = steeringValue * 0.8;
   steerDisplay.innerText = "Lenkrad: " + Math.round(wheelAngle) + "°";
 }
 
@@ -833,11 +833,11 @@ function update() {
   }
 
   // PC: W = vorwärts, S = rückwärts
-  if (keys["w"]) {
+  if (keys["w"] || keys["arrowup"]) {
     truck.speed += 0.01 * maxSpeed;
   }
 
-  if (keys["s"]) {
+  if (keys["s"] || keys["arrowdown"]) {
     truck.speed -= 0.01 * maxSpeed;
   }
 
@@ -868,11 +868,11 @@ function update() {
     -maxSpeed
   );
 
-  if (keys["a"]) {
+ if (keys["a"] || keys["arrowleft"]) {
     wheelAngle -= 8;
   }
 
-  if (keys["d"]) {
+  if (keys["d"] || keys["arrowright"]) {
     wheelAngle += 8;
   }
 
@@ -957,7 +957,7 @@ function getWheelTriggerPoints() {
   points.push(localToWorld(trailer, -80,  trailer.width / 3 + 10));
 
   // Anhänger Vorderachse / Drehschemelachse
-  const frontAxleX = trailer.length / 2 - 2;
+  const frontAxleX = trailer.length / 2 - 5;
   const axleCenter = localToWorld(trailer, frontAxleX, 0);
 
   points.push({
@@ -1191,7 +1191,7 @@ function updateTrailer() {
   const hitchY =
     truck.y - Math.sin(truck.angle) * truck.length / 2;
 
-  const frontAxleOffset = trailer.length / 2 - 2;
+  const frontAxleOffset = trailer.length / 2 - 5;
 
   // aktueller Drehschemelpunkt am Anhänger
   const currentFrontX =
@@ -1292,8 +1292,8 @@ function getDrawbarPolygon() {
   const hitchX = truck.x - Math.cos(truck.angle) * truck.length / 2;
   const hitchY = truck.y - Math.sin(truck.angle) * truck.length / 2;
 
-const axleX = trailer.frontAxleX ?? trailer.x + Math.cos(trailer.angle) * (trailer.length / 2 - 2);
-const axleY = trailer.frontAxleY ?? trailer.y + Math.sin(trailer.angle) * (trailer.length / 2 - 2);
+const axleX = trailer.frontAxleX ?? trailer.x + Math.cos(trailer.angle) * (trailer.length / 2 - 5);
+const axleY = trailer.frontAxleY ?? trailer.y + Math.sin(trailer.angle) * (trailer.length / 2 - 5);
 
   const width = 14;
 
@@ -1457,7 +1457,7 @@ function drawTrailer() {
   drawWheel(-80, -trailer.width / 3 - 10, 0);
   drawWheel(-80, trailer.width / 3 + 10, 0);
 
-  const frontAxleX = trailer.length / 2 - 2;
+  const frontAxleX = trailer.length / 2 - 5;
   const axleAngle = trailer.drawbarAngle - trailer.angle;
 
   ctx.save();
@@ -1484,8 +1484,8 @@ function drawDrawbar() {
   const hitchX = truck.x - Math.cos(truck.angle) * truck.length / 2;
   const hitchY = truck.y - Math.sin(truck.angle) * truck.length / 2;
 
-const axleX = trailer.frontAxleX ?? trailer.x + Math.cos(trailer.angle) * (trailer.length / 2 - 2);
-const axleY = trailer.frontAxleY ?? trailer.y + Math.sin(trailer.angle) * (trailer.length / 2 -2);
+const axleX = trailer.frontAxleX ?? trailer.x + Math.cos(trailer.angle) * (trailer.length / 2 - 5);
+const axleY = trailer.frontAxleY ?? trailer.y + Math.sin(trailer.angle) * (trailer.length / 2 - 5);
 
 const pivotRadius = 19;
 
