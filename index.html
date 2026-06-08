@@ -735,7 +735,7 @@ followBtn.addEventListener("click", () => {
   followTruck = true;
 
   camera.x = truck.x;
-  camera.y = truck.y;
+  camera.y = truck.y - 50;
 });
 
 document.addEventListener("keyup", e => {
@@ -3050,7 +3050,7 @@ followBtn.addEventListener("click", () => {
     truck.y - Math.sin(truck.angle) * truck.length / 2;
 
   camera.x = hitchX;
-  camera.y = hitchY;
+  camera.y = hitchY - 30;
 });
 
 document.addEventListener("keyup", e => {
