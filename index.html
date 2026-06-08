@@ -186,12 +186,14 @@ button {
   }
 
   canvas {
-    height: 56vh;
+    height: 100vh;
   }
+
 
 .controls {
   height: 34vh;
 
+  background: rgba(80,80,80,0.35) !important;
   display: grid;
 
   grid-template-columns: 1fr 1fr;
@@ -207,11 +209,16 @@ button {
 .steeringPanel {
   grid-column: 1;
   grid-row: 1;
+ display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+
 }
 
 .gearPanel {
-  grid-column: 2;
-  grid-row: 1;
+  grid-column: 1;
+  grid-row: 2;
 
   display: flex;
   justify-content: center;
@@ -220,15 +227,17 @@ button {
 }
 
 .pedalRow {
-  grid-column: 1;
+  grid-column: 2;
   grid-row: 2;
 
+  display: flex;
   justify-content: center;
+  gap: 3px;
 }
 
 .speedPanel {
   grid-column: 2;
-  grid-row: 2;
+  grid-row: 1;
 
   display: flex;
   flex-direction: column;
@@ -260,11 +269,41 @@ button {
   }
 
   .controls {
-    height: 35vh;
-    flex-direction: row;
+    height: 25vh;
+    display: grid; 1
+    grid-template-columns: 1fr 0.7fr 1fr 1fr;
+    align-items: center;
+    gap: 2px;
+    padding: 2px;
+  }
+
+  .steeringPanel {
+    grid-column: 1;
+Margin-top: -130px;
+  }
+
+  .gearPanel {
+    grid-column: 2;
+
+  }
+
+  .speedPanel {
+    grid-column: 3;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+Margin-top: -200px;
+  }
+
+  .pedalRow {
+    grid-column: 4;
+    justify-content: center;
+Margin-top: 30px;
+
   }
 }
-
 
 
 </style>
@@ -351,6 +390,7 @@ Neu starten
   <button id="followBtn">
     Zentrieren
   </button>
+
 
 </div>
 
