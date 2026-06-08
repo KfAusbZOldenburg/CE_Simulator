@@ -362,7 +362,11 @@ transform: translateY(-80px);
     align-items: center;
     gap: 2px;
     padding: 2px;
+.controls {
+  box-shadow: 0 100px 0 rgba(80,80,80,0.35);
+}
   }
+
 
   .steeringPanel {
     grid-column: 1;
@@ -554,12 +558,7 @@ function screenToWorld(clientX, clientY) {
   };
 }
 
-const coordBox = document.getElementById("coordBox");
-function updateCoordBox(clientX, clientY) {
-  if (!coordBox) return;
-  const pos = screenToWorld(clientX, clientY);
-  coordBox.innerText = "X: " + pos.x + " | Y: " + pos.y;
-}
+
 // rechte Maustaste zum Navigieren wie Steuerkreuz
 canvas.addEventListener("contextmenu", (e) => {
   e.preventDefault();
@@ -2678,6 +2677,9 @@ transform: translateY(-75px);
     align-items: center;
     gap: 2px;
     padding: 2px;
+.controls {
+  box-shadow: 0 100px 0 rgba(80,80,80,0.35);
+}
   }
 
   .steeringPanel {
@@ -2740,7 +2742,6 @@ Margin-top: 30px;
   © HptFw Lang
 </div>
 
-<div id="coordBox">X: 0 | Y: 0</div>
 
 <div id="correctionBox">Korrekturzüge: 0 / 4</div>
 
@@ -2855,14 +2856,6 @@ function screenToWorld(clientX, clientY) {
 }
 
 
-const coordBox = document.getElementById("coordBox");
-
-function updateCoordBox(clientX, clientY) {
-  const pos = screenToWorld(clientX, clientY);
-
-  coordBox.innerText =
-    "X: " + pos.x + " | Y: " + pos.y;
-}
 
 canvas.addEventListener("mousemove", (e) => {
   updateCoordBox(e.clientX, e.clientY);
