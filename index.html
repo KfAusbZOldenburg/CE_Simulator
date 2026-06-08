@@ -586,7 +586,12 @@ followBtn.addEventListener("click", () => {
     truck.y - Math.sin(truck.angle) * truck.length / 2;
 
   camera.x = hitchX;
-  camera.y = hitchY + 250;
+const offsetY =
+  window.innerWidth > window.innerHeight
+    ? 450   // Querformat
+    : 250;  // Hochformat
+
+camera.y = hitchY + offsetY;
 });
 
 document.addEventListener("keyup", e => {
