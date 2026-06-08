@@ -304,6 +304,23 @@ Margin-top: 30px;
 
   }
 }
+#correctionBox {
+  position: fixed;
+  top: 75px;
+  left: 10px;
+  z-index: 99999;
+
+  background: rgba(0,0,0,0.65);
+  color: white;
+
+  padding: 5px 10px;
+  border-radius: 8px;
+
+  font-size: 16px;
+  font-weight: bold;
+
+  pointer-events: none;
+}
 
 
 </style>
@@ -320,7 +337,7 @@ Margin-top: 30px;
   © HptFw Lang
 </div>
 
-
+<div id="correctionBox">Korrekturzüge: 0 / 4</div>
 
 <button id="restartBtn" style="
 display:none;
@@ -610,6 +627,8 @@ const speedSlider = document.getElementById("speedSlider");
 const speedDisplay = document.getElementById("speedDisplay");
 const restartBtn = document.getElementById("restartBtn");
 const followBtn = document.getElementById("followBtn");
+const correctionBox = document.getElementById("correctionBox");
+
 
 let maxSpeed = 4;
 
@@ -825,13 +844,27 @@ let taskCompleted = false;
 let markingViolationPoint = null;
 let steeringValue = 0;
 
+let correctionMoves = 0;
+let hasReversedOnce = false;
+let wasReversing = false;
+let correctionCounterStopped = false;
+let correctionCounterStarted = false;
+
+
 function reset() {
+
+
 
   crashed = false;
   crashReason = "";
   taskCompleted = false;
   steeringValue = 0;
 
+  correctionMoves = 0;
+  hasReversedOnce = false;
+  wasReversing = false;
+  correctionCounterStopped = false;
+  correctionCounterStarted = false;
 
   truck = {
   x: 1750,
@@ -862,6 +895,13 @@ restartBtn.addEventListener("click", () => {
   reset();
   restartBtn.style.display = "none";
 });
+
+correctionMoves = 0;
+hasReversedOnce = false;
+wasReversing = false;
+
+correctionCounterStopped = false;
+correctionCounterStarted = false;
 
 crashReason = "";
 
@@ -963,6 +1003,8 @@ function update() {
   }
 
   updateTrailer();
+
+
 
 
 if (checkRoadMarkingViolation()) {
@@ -1193,6 +1235,53 @@ function getBoundaryXAtY(linePoints, y) {
   return null;
 }
 
+function isTruckCompletelyBelowY(limitY) {
+  const corners = getCorners(truck);
+
+  return corners.every(p => p.y > limitY);
+}
+
+function updateCorrectionCounter() {
+if (!correctionCounterStarted) {
+  if (truck.x < 1400) {
+    correctionCounterStarted = true;
+  } else {
+    return;
+  }
+}
+  if (correctionCounterStopped) return;
+
+  if (isTruckCompletelyBelowY(1300)) {
+    correctionCounterStopped = true;
+    return;
+  }
+
+  const isReversingNow = truck.speed < -0.05;
+  const isDrivingForwardNow = truck.speed > 0.05;
+
+  if (isReversingNow) {
+    hasReversedOnce = true;
+    wasReversing = true;
+  }
+
+  if (
+    hasReversedOnce &&
+    wasReversing &&
+    isDrivingForwardNow
+  ) {
+    correctionMoves++;
+    wasReversing = false;
+
+    if (correctionMoves > 4) {
+      crashed = true;
+      crashReason = "ZU VIELE KORREKTURZÜGE!";
+      truck.speed = 0;
+      restartBtn.style.display = "block";
+    }
+  }
+}
+
+
 function checkRoadMarkingViolation() {
   const wheelPoints = getWheelTriggerPoints();
 
@@ -1240,6 +1329,12 @@ if (rightX !== null && p.x > rightX - tireHalfWidth + markingLimits.tolerance) {
 }
 
 function updateTrailer() {
+
+updateCorrectionCounter();
+
+if (crashed) return;
+
+
   const hitchX =
     truck.x - Math.cos(truck.angle) * truck.length / 2;
 
@@ -1258,6 +1353,7 @@ function updateTrailer() {
   // Richtung vom Drehschemel zur Kupplung
   const dx = hitchX - currentFrontX;
   const dy = hitchY - currentFrontY;
+
 
   trailer.drawbarAngle = Math.atan2(dy, dx);
 
@@ -1576,6 +1672,9 @@ ctx.stroke();
 
 function drawHud() {
 
+if (correctionBox) {
+  correctionBox.innerText = "Korrekturzüge: " + correctionMoves + " / 4";
+}
 
 }
 
@@ -1629,6 +1728,22 @@ else if (crashReason === "BEREICH VERLASSEN!") {
   );
 
 }
+else if (crashReason === "ZU VIELE KORREKTURZÜGE!") {
+
+  ctx.fillText(
+    "Mehr als 4 Korrekturzüge",
+    canvas.width / 2,
+    canvas.height / 2 - 20
+  );
+
+  ctx.fillText(
+    "verwendet",
+    canvas.width / 2,
+    canvas.height / 2 + 20
+  );
+
+}
+
 else {
 
   ctx.fillText(
