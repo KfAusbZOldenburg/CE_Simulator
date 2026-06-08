@@ -15,16 +15,27 @@
     color: white;
     background: #111;
   }
-  #menuScreen {
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    background-image: url("HintergrundBW.png");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-  }
+#menuScreen {
+  width: 100vw;
+  min-height: 100vh;
+  height: 100vh;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  box-sizing: border-box;
+  padding: 20px;
+
+  background-image: url("HintergrundBW.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+  
   .menu {
     text-align: center;
     width: 90%;
@@ -34,6 +45,7 @@
     border-radius: 18px;
     box-shadow: 0 0 25px rgba(0,0,0,0.5);
     backdrop-filter: blur(4px);
+    margin: auto;
   }
   h1 { margin: 0 0 12px 0; font-size: 30px; }
   .subtitle { font-size: 20px; margin: 0 0 35px 0; }
