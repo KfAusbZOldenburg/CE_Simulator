@@ -37,46 +37,89 @@
   }
   h1 { margin: 0 0 12px 0; font-size: 30px; }
   .subtitle { font-size: 20px; margin: 0 0 35px 0; }
-  .buttonContainer { display: flex; flex-direction: column; gap: 20px; }
-  .menuButton {
-    padding: 25px;
-    font-size: 20px;
-    font-weight: bold;
-    border: none;
-    border-radius: 14px;
-    cursor: pointer;
-    background: #6E8B3D;
-    color: white;
-    transition: 0.2s;
+
+@media (orientation: portrait) {
+  .menuRow {
+    grid-template-columns: 1fr;
   }
-  .menuButton:hover { background: #15803d; transform: scale(1.03); }
-  .credits { margin-top: 30px; opacity: 0.85; font-size: 14px; line-height: 1.5; }
-  #gameScreen { display: none; width: 100vw; height: 100vh; background: #000; }
-  #gameFrame { width: 100vw; height: 100vh; border: 0; display: block; background: #000; }
-  #backBtn {
-    display: none;
-    position: fixed;
-    top: 12px;
-    left: 12px;
-    z-index: 2147483647;
-    border: none;
-    border-radius: 10px;
-    background: rgba(0,0,0,0.72);
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
-    padding: 10px 14px;
-    cursor: pointer;
-    box-shadow: 0 0 12px rgba(0,0,0,0.45);
+
+  .menuButton,
+  .infoButton {
+    min-height: 82px;
+    font-size: 17px;
   }
-  #backBtn:hover { background: rgba(30,30,30,0.9); }
-  @media (max-width: 700px) {
-    .menu { padding: 22px; }
-    h1 { font-size: 23px; }
-    .subtitle { font-size: 17px; }
-    .menuButton { font-size: 17px; padding: 20px 12px; }
-    #backBtn { font-size: 14px; padding: 9px 12px; }
-  }
+}
+.buttonContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.menuRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.menuButton,
+.infoButton {
+  width: 100%;
+  min-height: 90px;
+  padding: 18px;
+  font-size: 18px;
+  font-weight: bold;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  color: white;
+}
+
+.menuButton {
+  background: #6E8B3D;
+}
+
+.infoButton {
+  background: #374151;
+}
+
+.menuButton:hover {
+  background: #15803d;
+}
+
+.infoButton:hover {
+  background: #1f2937;
+}
+
+.credits {
+  margin-top: 25px;
+  opacity: 0.85;
+  font-size: 14px;
+}
+
+.fehlerScreen {
+  display: none;
+
+  min-height: 100vh;
+
+  justify-content: center;
+  align-items: center;
+
+  background-image: url("HintergrundBW.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.fehlerListe {
+  list-style-position: inside;
+  text-align: center;
+
+  padding: 0;
+  margin: 25px 0;
+
+  line-height: 1.8;
+  font-size: 18px;
+}
 </style>
 </head>
 <body>
@@ -86,13 +129,72 @@
     <div class="menu">
       <h1>Grundfahraufgaben der Fahrerlaubnisklasse CE</h1>
       <p class="subtitle">Wähle eine Grundfahraufgabe</p>
-      <div class="buttonContainer">
-        <button class="menuButton" onclick="startLevel('gerade')">20 m gerade rückwärts an eine Rampe zum Be- oder Entladen</button>
-        <button class="menuButton" onclick="startLevel('umkehren')">Umkehren durch Rückwärtsfahren nach links</button>
-      </div>
+<div class="buttonContainer">
+
+  <div class="menuRow">
+    <button class="menuButton" onclick="startLevel('gerade')">
+      20 m gerade rückwärts an eine Rampe zum Be- oder Entladen
+    </button>
+
+    <button class="infoButton" onclick="showFehler('gerade')">
+      Fehlerbewertung
+    </button>
+  </div>
+
+  <div class="menuRow">
+    <button class="menuButton" onclick="startLevel('umkehren')">
+      Umkehren durch Rückwärtsfahren nach links
+    </button>
+
+    <button class="infoButton" onclick="showFehler('umkehren')">
+      Fehlerbewertung
+    </button>
+  </div>
+
+</div>
       <div class="credits">Entwickelt von KfAusbZ Oldenburg<br>© HptFw Lang</div>
     </div>
   </main>
+
+<section id="fehlerGerade" class="fehlerScreen">
+  <div class="menu">
+    <h1>Fehlerbewertung</h1>
+    <p class="subtitle">20 m gerade rückwärts an eine Rampe zum Be- oder Entladen</p>
+
+    <ul class="fehlerListe">
+      <li>Nichteinteilung eines Sicherungspostens</li>
+      <li>Nichtanhalten bei Abbruch der Sichtverbindung zum Sicherungsposten</li>
+      <li>fehlende Reaktion auf Abstandszeichen</li>
+      <li>ungenügende Verkehrsbeobachtung</li>
+      <li>nicht annähernd parallel mit dem Heck des Anhängers zur Laderampe</li>
+      <li>mehr als 1 m von der Laderampe entfernt</li>
+      <li>mehr als 4 Korrekturzüge</li>
+    </ul>
+
+    <button class="menuButton" onclick="showMenu()">
+      Zurück
+    </button>
+  </div>
+</section>
+
+<section id="fehlerUmkehren" class="fehlerScreen">
+  <div class="menu">
+    <h1>Fehlerbewertung</h1>
+    <p class="subtitle">Umkehren durch Rückwärtsfahren nach links</p>
+
+    <ul class="fehlerListe">
+      <li>Nichteinteilung eines Sicherungspostens</li>
+      <li>Nichtanhalten bei Abbruch der Sichtverbindung zum Sicherungsposten</li>
+      <li>ungenügende Verkehrsbeobachtung</li>
+      <li>Überfahren des Bordsteins oder der Fahrbahnbegrenzung</li>
+      <li>mehr als 4 Korrekturzüge</li>
+    </ul>
+
+    <button class="menuButton" onclick="showMenu()">
+      Zurück
+    </button>
+  </div>
+</section>
 
   <section id="gameScreen">
     <iframe id="gameFrame" title="CE Simulator"></iframe>
@@ -173,6 +275,26 @@ canvas {
   align-items: center;
 }
 
+.menuRow {
+  display: grid;
+  grid-template-columns: 1fr 180px;
+  gap: 14px;
+}
+
+.infoButton {
+  padding: 18px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  background: #374151;
+  color: white;
+}
+
+.infoButton:hover {
+  background: #1f2937;
+}
 
 button {
   font-size: 18px;
@@ -258,7 +380,11 @@ button {
   -webkit-user-drag: none;
   pointer-events: none;
 }
-
+@media (max-width: 700px) {
+  .menuRow {
+    grid-template-columns: 1fr;
+  }
+}
 @media screen and (max-width: 1100px) and (orientation: portrait) {
   h2 {
     font-size: 16px;
@@ -2401,6 +2527,8 @@ loop();
 </script>
 
 </body>
+
+
 </html>
   </template>
 
@@ -4339,6 +4467,25 @@ loop();
   const gameScreen = document.getElementById('gameScreen');
   const gameFrame = document.getElementById('gameFrame');
   const backBtn = document.getElementById('backBtn');
+const fehlerGerade = document.getElementById("fehlerGerade");
+const fehlerUmkehren = document.getElementById("fehlerUmkehren");
+
+function showFehler(typ) {
+  menuScreen.style.display = "none";
+  gameScreen.style.display = "none";
+  backBtn.style.display = "none";
+
+  fehlerGerade.style.display = "none";
+  fehlerUmkehren.style.display = "none";
+
+  if (typ === "gerade") {
+    fehlerGerade.style.display = "flex";
+  }
+
+  if (typ === "umkehren") {
+    fehlerUmkehren.style.display = "flex";
+  }
+}
 
   function startLevel(level) {
     const tpl = document.getElementById('tpl-' + level);
@@ -4354,6 +4501,10 @@ loop();
     gameScreen.style.display = 'none';
     menuScreen.style.display = 'flex';
     backBtn.style.display = 'none';
+    fehlerGerade.style.display = "none";
+    fehlerUmkehren.style.display = "none";
+
+
   }
 </script>
 </body>
