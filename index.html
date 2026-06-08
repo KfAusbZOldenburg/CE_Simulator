@@ -446,6 +446,52 @@ canvas.addEventListener("mousemove", (e) => {
   updateCoordBox(e.clientX, e.clientY);
 });
 
+
+//rechte Maustaste zum navigieren
+
+canvas.addEventListener("contextmenu", (e) => {
+  e.preventDefault();
+});
+
+canvas.addEventListener("mousedown", (e) => {
+
+  if (e.button !== 2) return;
+
+  draggingMouse = true;
+
+  lastMouseX = e.clientX;
+  lastMouseY = e.clientY;
+
+  followTruck = false;
+
+});
+
+canvas.addEventListener("mousemove", (e) => {
+
+  if (!draggingMouse) return;
+
+  const dx = e.clientX - lastMouseX;
+  const dy = e.clientY - lastMouseY;
+
+  camera.x -= dx / camera.zoom;
+  camera.y -= dy / camera.zoom;
+
+  lastMouseX = e.clientX;
+  lastMouseY = e.clientY;
+
+});
+
+canvas.addEventListener("mouseup", () => {
+  draggingMouse = false;
+});
+
+canvas.addEventListener("mouseleave", () => {
+  draggingMouse = false;
+});
+
+
+// touch zum navigieren
+
 canvas.addEventListener("touchmove", (e) => {
   if (e.touches.length === 1) {
     updateCoordBox(
@@ -768,6 +814,9 @@ let followTruck = true;
 let draggingMap = false;
 let lastTouchX = 0;
 let lastTouchY = 0;
+let draggingMouse = false;
+let lastMouseX = 0;
+let lastMouseY = 0;
 
 let truck, trailer;
 let crashed = false;
@@ -1652,7 +1701,7 @@ function draw() {
     truck.y - Math.sin(truck.angle) * truck.length / 2;
 
   camera.x = hitchX;
-  camera.y = hitchY;
+  camera.y = hitchY + 50;
 }
 
   ctx.save();
