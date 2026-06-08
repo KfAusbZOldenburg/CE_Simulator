@@ -579,8 +579,14 @@ followBtn.addEventListener("click", () => {
 
   followTruck = true;
 
-  camera.x = truck.x;
-  camera.y = truck.y;
+  const hitchX =
+    truck.x - Math.cos(truck.angle) * truck.length / 2;
+
+  const hitchY =
+    truck.y - Math.sin(truck.angle) * truck.length / 2;
+
+  camera.x = hitchX;
+  camera.y = hitchY + 250;
 });
 
 document.addEventListener("keyup", e => {
@@ -1637,9 +1643,16 @@ function drawSuccessOverlay() {
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  if (followTruck) {
-  camera.x = truck.x;
-  camera.y = truck.y;
+ if (followTruck) {
+
+  const hitchX =
+    truck.x - Math.cos(truck.angle) * truck.length / 2;
+
+  const hitchY =
+    truck.y - Math.sin(truck.angle) * truck.length / 2;
+
+  camera.x = hitchX;
+  camera.y = hitchY + 250;
 }
 
   ctx.save();
