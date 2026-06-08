@@ -733,9 +733,16 @@ document.addEventListener("keydown", e => {
 followBtn.addEventListener("click", () => {
 
   followTruck = true;
+  introActive = false;
 
-  camera.x = truck.x;
-  camera.y = truck.y - 50;
+  const hitchX =
+    truck.x - Math.cos(truck.angle) * truck.length / 2;
+
+  const hitchY =
+    truck.y - Math.sin(truck.angle) * truck.length / 2;
+
+  camera.x = hitchX;
+  camera.y = hitchY - 20;
 });
 
 document.addEventListener("keyup", e => {
@@ -2341,7 +2348,7 @@ if (followTruck && !introActive) {
     truck.x - Math.cos(truck.angle) * truck.length / 2;
 
   camera.y =
-    truck.y - Math.sin(truck.angle) * truck.length / 2;
+    truck.y - Math.sin(truck.angle) * truck.length / 2 + 60;
 }
 
   ctx.save();
@@ -3042,6 +3049,7 @@ document.addEventListener("keydown", e => {
 followBtn.addEventListener("click", () => {
 
   followTruck = true;
+  introActive = false;
 
   const hitchX =
     truck.x - Math.cos(truck.angle) * truck.length / 2;
@@ -3050,7 +3058,7 @@ followBtn.addEventListener("click", () => {
     truck.y - Math.sin(truck.angle) * truck.length / 2;
 
   camera.x = hitchX;
-  camera.y = hitchY - 30;
+  camera.y = hitchY - 20;
 });
 
 document.addEventListener("keyup", e => {
