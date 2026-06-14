@@ -1442,7 +1442,7 @@ const randomYOffset =
   angle: Math.PI,
   speed: 0,
   length: 360,
-  width: 110,
+  width: 90,
   steeringAngle: 0
 };
 
@@ -1643,6 +1643,7 @@ const allPoints = [
   ...getCorners(trailer)
 ];
 
+
 for (const p of allPoints) {
 
   if (p.x < 895) {
@@ -1747,12 +1748,12 @@ function getWheelTriggerPoints() {
   const points = [];
 
   // LKW Hinterachse
-  points.push(localToWorld(truck, -95, -truck.width / 3 - 2));
-  points.push(localToWorld(truck, -95,  truck.width / 3 + 2));
+  points.push(localToWorld(truck, -95, -truck.width / 2 - 3));
+  points.push(localToWorld(truck, -95,  truck.width / 2 + 3));
 
   // LKW Vorderachse
-  points.push(localToWorld(truck, 130, -truck.width / 3 - 2));
-  points.push(localToWorld(truck, 130,  truck.width / 3 + 2));
+  points.push(localToWorld(truck, 130, -truck.width / 2 - 3));
+  points.push(localToWorld(truck, 130,  truck.width / 2 + 3));
 
   // Anhänger Hinterachse
   points.push(localToWorld(trailer, -90, -trailer.width / 3 - 10));
@@ -2333,14 +2334,14 @@ ctx.save();
 ctx.translate(truck.x, truck.y);
 ctx.rotate(truck.angle);
 
-  drawWheel(-95, -truck.width / 3 - 2, 0);
-  drawWheel(-95, truck.width / 3 + 2, 0);
-  drawWheel(-95, -truck.width / 5 - 5, 0);
-  drawWheel(-95, truck.width / 5 + 5, 0);
+  drawWheel(-95, -truck.width / 3 - 10, 0);
+  drawWheel(-95, truck.width / 3 + 10, 0);
+  drawWheel(-95, -truck.width / 5 - 10, 0);
+  drawWheel(-95, truck.width / 5 + 10, 0);
 
 
-  drawWheel(130, -truck.width / 3 - 2, truck.steeringAngle);
-  drawWheel (130, truck.width / 3 + 2, truck.steeringAngle);
+  drawWheel(130, -truck.width / 3 - 6, truck.steeringAngle);
+  drawWheel (130, truck.width / 3 + 6, truck.steeringAngle);
 
   ctx.restore();
 }
@@ -3540,19 +3541,26 @@ finishTime = null;
   correctionCounterStopped = false;
   correctionCounterStarted = false;
 
+
+  steeringValue = 0;
+const randomYOffset =
+  (Math.random() < 0.5 ? -1 : 1) *
+  (Math.floor(Math.random() * 2) + 1);
+
   truck = {
   x: 1750,
   y: 1100,
   angle: Math.PI,
   speed: 0,
   length: 360,
-  width: 110,
+  width: 90,
   steeringAngle: 0
 };
 
+
 trailer = {
   x: 2145,
-  y: 1100,
+  y: 1100 + randomYOffset,
   angle: Math.PI,
   length: 260,
   width: 90,
@@ -3992,6 +4000,12 @@ if (p.x > 3500) {
   return true;
 }
 
+if (p.y > 2300) {
+  markingViolationPoint = p;
+  crashReason = "BEREICH VERLASSEN!";
+  return true;
+}
+
 if (leftX !== null && p.x < leftX + tireHalfWidth - markingLimits.tolerance) {
   markingViolationPoint = p;
   return true;
@@ -4249,14 +4263,14 @@ ctx.save();
 ctx.translate(truck.x, truck.y);
 ctx.rotate(truck.angle);
 
-  drawWheel(-95, -truck.width / 3 - 2, 0);
-  drawWheel(-95, truck.width / 3 + 2, 0);
-  drawWheel(-95, -truck.width / 5 - 5, 0);
-  drawWheel(-95, truck.width / 5 + 5, 0);
+  drawWheel(-95, -truck.width / 3 - 10, 0);
+  drawWheel(-95, truck.width / 3 + 10, 0);
+  drawWheel(-95, -truck.width / 5 - 10, 0);
+  drawWheel(-95, truck.width / 5 + 10, 0);
 
 
-  drawWheel(130, -truck.width / 3 - 2, truck.steeringAngle);
-  drawWheel (130, truck.width / 3 + 2, truck.steeringAngle);
+  drawWheel(130, -truck.width / 3 - 6, truck.steeringAngle);
+  drawWheel (130, truck.width / 3 + 6, truck.steeringAngle);
 
   ctx.restore();
 }
