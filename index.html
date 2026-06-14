@@ -4,128 +4,84 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Grundfahraufgaben CE</title>
+
 <style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    font-family: Arial, sans-serif;
-    color: white;
-    background: #111;
-  }
-#menuScreen {
+/* =========================================================
+   00 GRUNDLAYOUT
+   ========================================================= */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+  color: white;
+  background: #111;
+  touch-action: none;
+}
+
+button {
+  font-size: 18px;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  touch-action: none;
+}
+
+/* =========================================================
+   01 MENÜ
+   ========================================================= */
+#menuScreen,
+.fehlerScreen {
   width: 100vw;
-  min-height: 100vh;
   height: 100vh;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  overflow-y: auto;
-  overflow-x: hidden;
-
   box-sizing: border-box;
   padding: 20px;
-
   background-image: url("HintergrundBW.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
 }
-  
-  .menu {
-    text-align: center;
-    width: 90%;
-    max-width: 760px;
-    padding: 30px;
-    padding-bottom: 100px;
-    background: rgba(0, 0, 0, 0.42);
-    border-radius: 18px;
-    box-shadow: 0 0 25px rgba(0,0,0,0.5);
-    backdrop-filter: blur(4px);
-    margin: auto;
-  }
-  h1 { margin: 0 0 12px 0; font-size: 30px; }
-  .subtitle { font-size: 20px; margin: 0 0 35px 0; }
 
-#gameScreen {
+#menuScreen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.fehlerScreen {
   display: none;
-  width: 100vw;
-  height: 100vh;
-  background: #000;
+  justify-content: center;
+  align-items: center;
 }
 
-#gameFrame {
-  width: 100vw;
-  height: 100vh;
-  border: 0;
-  display: block;
-  background: #000;
+.menu {
+  text-align: center;
+  width: 90%;
+  max-width: 760px;
+  padding: 30px 30px 100px 30px;
+  background: rgba(0, 0, 0, 0.42);
+  border-radius: 18px;
+  box-shadow: 0 0 25px rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  margin: auto;
 }
 
-#backBtn {
-  display: none;
-  position: fixed;
-  top: 12px;
-  left: 12px;
-  z-index: 2147483647;
-
-  border: none;
-  border-radius: 10px;
-  background: rgba(0,0,0,0.72);
-  color: white;
-
-  font-size: 16px;
-  font-weight: bold;
-  padding: 10px 14px;
+h1 {
+  margin: 0 0 12px 0;
+  font-size: 30px;
 }
 
-@media (orientation: portrait) {
-  .menuRow {
-    grid-template-columns: 1fr;
-  }
-
-#gameScreen {
-  display: none;
-  width: 100vw;
-  height: 100vh;
-  background: #000;
+.subtitle {
+  font-size: 20px;
+  margin: 0 0 35px 0;
 }
 
-#gameFrame {
-  width: 100vw;
-  height: 100vh;
-  border: 0;
-  display: block;
-  background: #000;
-}
-
-#backBtn {
-  display: none;
-  position: fixed;
-  top: 12px;
-  left: 12px;
-  z-index: 2147483647;
-
-  border: none;
-  border-radius: 10px;
-  background: rgba(0,0,0,0.72);
-  color: white;
-
-  font-size: 16px;
-  font-weight: bold;
-  padding: 10px 14px;
-}
-
-  .menuButton,
-  .infoButton {
-    min-height: 82px;
-    font-size: 17px;
-  }
-}
 .buttonContainer {
   display: flex;
   flex-direction: column;
@@ -145,9 +101,7 @@
   padding: 18px;
   font-size: 18px;
   font-weight: bold;
-  border: none;
   border-radius: 14px;
-  cursor: pointer;
   color: white;
 }
 
@@ -159,50 +113,243 @@
   background: #374151;
 }
 
-.menuButton:hover {
-  background: #15803d;
-}
-
-.infoButton:hover {
-  background: #1f2937;
-}
-
 .credits {
   margin-top: 25px;
   opacity: 0.85;
   font-size: 14px;
 }
 
-.fehlerScreen {
-  display: none;
-
-  min-height: 100vh;
-
-  justify-content: center;
-  align-items: center;
-
-  background-image: url("HintergrundBW.png");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
 .fehlerListe {
   list-style-position: inside;
-
   text-align: left;
-
   width: fit-content;
   margin: 25px auto;
-
   line-height: 1.8;
   font-size: 18px;
-
   padding: 0;
 }
 
-@media (orientation: portrait) {
+/* =========================================================
+   02 SPIELFLÄCHE UND HUD
+   ========================================================= */
+#gameScreen {
+  display: none;
+  width: 100vw;
+  height: 100vh;
+  background: #000;
+  overflow: hidden;
+}
 
+#game {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  background: #2b2b2b;
+}
+
+#gameHeader {
+  position: fixed;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  text-align: center;
+  pointer-events: none;
+}
+
+#gameHeader h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+#gameHeader p {
+  margin: 2px 0 0 0;
+  font-size: 12px;
+}
+
+#backBtn {
+  display: none;
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 99999;
+  background: rgba(0,0,0,0.72);
+  color: white;
+  font-weight: bold;
+}
+
+#restartBtn {
+  display: none;
+  position: fixed;
+  top: 85%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 28px;
+  padding: 20px 40px;
+  z-index: 1000;
+  background: #1f8f3a;
+  color: white;
+  font-weight: bold;
+}
+
+#watermark {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 99999;
+  color: rgba(255, 255, 255, 0.06);
+  font-size: 24px;
+  font-weight: bold;
+  pointer-events: none;
+}
+
+.hudBox {
+  position: fixed;
+  z-index: 99999;
+  background: rgba(0,0,0,0.65);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  pointer-events: none;
+}
+
+#correctionBox {
+  top: 75px;
+  left: 10px;
+}
+
+*/
+#coordBox {
+  top: 45px;
+  right: 10px;
+  color: yellow;
+  font-family: monospace;
+}
+/*
+
+#introBox {
+  position: fixed;
+  top: 95px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 99999;
+  background: rgba(0,0,0,0.78);
+  color: white;
+  padding: 12px 22px;
+  border-radius: 12px;
+  font-size: 22px;
+  font-weight: bold;
+  display: none;
+  pointer-events: none;
+}
+
+/* =========================================================
+   03 STEUERUNG
+   ========================================================= */
+.controls {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 25vh;
+  z-index: 50;
+  background: rgba(80,80,80,0.35);
+  display: grid;
+  grid-template-columns: 1fr 0.7fr 1fr 1fr;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  box-sizing: border-box;
+}
+
+.steeringPanel {
+  grid-column: 1;
+  margin-top: -30px;
+}
+
+.gearPanel {
+  grid-column: 2;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.speedPanel {
+  grid-column: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: -50px;
+}
+
+#guideBtn {
+  margin-top: 5px;
+}
+
+.pedalRow {
+  grid-column: 4;
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+  margin-top: 30px;
+}
+
+.gearPanel button {
+  width: 52px;
+  height: 42px;
+  font-weight: bold;
+  background: #333;
+  color: white;
+  border: 2px solid #777;
+}
+
+.gearPanel button.activeGear {
+  background: #0066ff;
+  border-color: white;
+}
+
+.pedal {
+  width: 90px;
+  height: 65px;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.pedal img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+#steerDisplay {
+  font-size: 14px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+#steeringWheel {
+  width: 130px;
+  height: 130px;
+  margin: 6px auto;
+  touch-action: none;
+}
+
+#steeringWheelImg {
+  width: 100%;
+  height: 100%;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+/* =========================================================
+   04 HOCHFORMAT
+   ========================================================= */
+@media (orientation: portrait) {
   #menuScreen {
     padding: 14px;
     align-items: flex-start;
@@ -237,8 +384,6 @@
   }
 
   .menuButton {
-    width: 100%;
-    min-height: 86px;
     font-size: 22px;
     line-height: 1.2;
   }
@@ -250,52 +395,78 @@
     line-height: 1.2;
   }
 
-  .credits {
-    margin-top: 32px;
-    font-size: 16px;
+  .controls {
+    height: 34vh;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 6px;
+    padding: 6px;
+  }
+
+  .steeringPanel {
+    grid-column: 1;
+    grid-row: 1;
+    margin-top: 0;
+  }
+
+  .gearPanel {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .speedPanel {
+    grid-column: 2;
+    grid-row: 1;
+    margin-top: -15px;
+  }
+
+  .pedalRow {
+    grid-column: 2;
+    grid-row: 2;
+    margin-top: 0;
+  }
+
+  #restartBtn {
+    top: 87%;
+    font-size: 20px;
+    padding: 14px 28px;
   }
 }
 </style>
 </head>
+
 <body>
-  <button id="backBtn" onclick="showMenu()">← Zurück zum Menü</button>
+<button id="backBtn">← Zurück zum Menü</button>
 
-  <main id="menuScreen">
-    <div class="menu">
-      <h1>Grundfahraufgaben der Fahrerlaubnisklasse CE</h1>
-      <p class="subtitle">Wähle eine Grundfahraufgabe</p>
-<div class="buttonContainer">
+<main id="menuScreen">
+  <div class="menu">
+    <h1>Grundfahraufgaben der Fahrerlaubnisklasse CE</h1>
+    <p class="subtitle">Wähle eine Grundfahraufgabe</p>
 
-  <div class="menuRow">
-    <button class="menuButton" onclick="startLevel('gerade')">
-      20 m gerade rückwärts an eine Rampe zum Be- oder Entladen
-    </button>
+    <div class="buttonContainer">
+      <div class="menuRow">
+        <button class="menuButton" id="startGeradeBtn">
+          20 m gerade rückwärts an eine Rampe zum Be- oder Entladen
+        </button>
+        <button class="infoButton" id="fehlerGeradeBtn">Fehlerbewertung</button>
+      </div>
 
-    <button class="infoButton" onclick="showFehler('gerade')">
-      Fehlerbewertung
-    </button>
-  </div>
-
-  <div class="menuRow">
-    <button class="menuButton" onclick="startLevel('umkehren')">
-      Umkehren durch Rückwärtsfahren nach links
-    </button>
-
-    <button class="infoButton" onclick="showFehler('umkehren')">
-      Fehlerbewertung
-    </button>
-  </div>
-
-</div>
-      <div class="credits">Entwickelt von KfAusbZ Oldenburg<br>© HptFw Lang</div>
+      <div class="menuRow">
+        <button class="menuButton" id="startUmkehrenBtn">
+          Umkehren durch Rückwärtsfahren nach links
+        </button>
+        <button class="infoButton" id="fehlerUmkehrenBtn">Fehlerbewertung</button>
+      </div>
     </div>
-  </main>
+
+    <div class="credits">Entwickelt von KfAusbZ Oldenburg<br>© HptFw Lang</div>
+  </div>
+</main>
 
 <section id="fehlerGerade" class="fehlerScreen">
   <div class="menu">
     <h1>Fehlerbewertung</h1>
     <p class="subtitle">20 m gerade rückwärts an eine Rampe zum Be- oder Entladen</p>
-
     <ul class="fehlerListe">
       <li>Nichteinteilung eines Sicherungspostens</li>
       <li>Nichtanhalten bei Abbruch der Sichtverbindung zum Sicherungsposten</li>
@@ -305,10 +476,7 @@
       <li>mehr als 1 m von der Laderampe entfernt</li>
       <li>mehr als 4 Korrekturzüge</li>
     </ul>
-
-    <button class="menuButton" onclick="showMenu()">
-      Zurück
-    </button>
+    <button class="menuButton backToMenuBtn">Zurück</button>
   </div>
 </section>
 
@@ -316,7 +484,6 @@
   <div class="menu">
     <h1>Fehlerbewertung</h1>
     <p class="subtitle">Umkehren durch Rückwärtsfahren nach links</p>
-
     <ul class="fehlerListe">
       <li>Nichteinteilung eines Sicherungspostens</li>
       <li>Nichtanhalten bei Abbruch der Sichtverbindung zum Sicherungsposten</li>
@@ -324,754 +491,623 @@
       <li>Überfahren des Bordsteins oder der Fahrbahnbegrenzung</li>
       <li>mehr als 4 Korrekturzüge</li>
     </ul>
-
-    <button class="menuButton" onclick="showMenu()">
-      Zurück
-    </button>
+    <button class="menuButton backToMenuBtn">Zurück</button>
   </div>
 </section>
 
-  <section id="gameScreen">
-    <iframe id="gameFrame" title="CE Simulator"></iframe>
-  </section>
-
-  <template id="tpl-gerade">
-<!DOCTYPE html>
-<html lang="de">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>CE Simulator 20m gerade</title>
-
-
-<style>
-
-#watermark {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-
-  z-index: 99999;
-
-  color: rgba(255, 255, 255, 0.04);
-  font-size: 24px;
-  font-weight: bold;
-
-  pointer-events: none;
-}
-
-
-html, body {
-  margin: 0;
-  padding: 0;
-  background: #000;
-  color: white;
-  font-family: Arial, sans-serif;
-  text-align: center;
-  overflow: hidden;
-  touch-action: none;
-}
-
-h2 {
-  margin: 8px 0 4px 0;
-  font-size: 18px;
-}
-
-p {
-  margin: 2px 0 8px 0;
-  font-size: 12px;
-}
-
-
-
-canvas {
-  background: #2b2b2b;
-  display: block;
-  margin: 0 auto;
-  border: none;
-  width: 100vw;
-  height: 62vh;
-  object-fit: cover;
-}
-.controls {
-  transform: translateY(-80px);
-  position: fixed;
-  left: 0;
-  bottom: 0;
-  width: 100vw;
-  height: 10vh;
-
-  background: rgba(0,0,0,0.35);
-
-
-
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-}
-
-.menuRow {
-  display: grid;
-  grid-template-columns: 1fr 180px;
-  gap: 14px;
-}
-
-.infoButton {
-  padding: 18px;
-  font-size: 16px;
-  font-weight: bold;
-  border: none;
-  border-radius: 14px;
-  cursor: pointer;
-  background: #374151;
-  color: white;
-}
-
-.infoButton:hover {
-  background: #1f2937;
-}
-
-button {
-  font-size: 18px;
-  padding: 12px 18px;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  touch-action: none;
-}
-
-
-.gearPanel {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-}
-
-.gearPanel button {
-  width: 52px;
-  height: 42px;
-  font-weight: bold;
-  background: #333;
-  color: white;
-  border: 2px solid #777;
-}
-
-.gearPanel button.activeGear {
-  background: #0066ff;
-  border-color: white;
-}
-.pedal {
-  width: 90px;
-  height: 65px;
-  color: white;
-  font-weight: bold;
-  font-size: 15px;
-}
-
-.pedal {
-  background: transparent;
-  border: none;
-  padding: 0;
-}
-
-.pedal img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  pointer-events: none;
-}
-
-
-
-
-.steerButtons {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  flex-wrap: nowrap;
-}
-
-#steerDisplay {
-  font-size: 14px;
-  margin-bottom: 10px;
-}
-
-.pedalRow {
-  display: flex;
-  gap: 3px;
-}
-
-#steeringWheel {
-  width: 130px;
-  height: 130px;
-  margin: 6px auto;
-  touch-action: none;
-}
-
-#steeringWheelImg {
-  width: 100%;
-  height: 100%;
-  user-select: none;
-  -webkit-user-drag: none;
-  pointer-events: none;
-}
-@media (max-width: 700px) {
-  .menuRow {
-    grid-template-columns: 1fr;
-  }
-}
-@media screen and (max-width: 1100px) and (orientation: portrait) {
-  h2 {
-    font-size: 16px;
-    margin: 3px 0 1px 0;
-  }
-
-  p {
-    font-size: 11px;
-    margin: 1px 0 3px 0;
-  }
-
-  canvas {
-    height: 100vh;
-  }
-
-
-.controls {
-
-  height: 34vh;
-
-  background: rgba(80,80,80,0.35) !important;
-  display: grid;
-
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto auto;
-
-  gap: 6px;
-
-  padding: 6px;
-}
-
-
-
-.steeringPanel {
-  grid-column: 1;
-  grid-row: 1;
- display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-
-}
-
-.gearPanel {
-  grid-column: 1;
-  grid-row: 2;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-}
-
-.pedalRow {
-  grid-column: 2;
-  grid-row: 2;
-
-  display: flex;
-  justify-content: center;
-  gap: 3px;
-}
-
-.speedPanel {
-  grid-column: 2;
-  grid-row: 1;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-
-  margin-top: -15px;
-}
-
-
-  #restartBtn {
-    top: 87% !important;
-    font-size: 20px !important;
-    padding: 14px 28px !important;
-  }
-}
-
-@media (orientation: landscape) {
-  h2 {
-    font-size: 24px;
-  }
-
-  p {
-    font-size: 16px;
-  }
-
-  canvas {
-    height: 75vh;
-  }
-
-  .controls {
-transform: translateY(-80px);
-    height: 25vh;
-    display: grid;
-    grid-template-columns: 1fr 0.7fr 1fr 1fr;
-    align-items: center;
-    gap: 2px;
-    padding: 2px;
-.controls {
-  box-shadow: 0 100px 0 rgba(80,80,80,0.35);
-}
-  }
-
-
-  .steeringPanel {
-    grid-column: 1;
-Margin-top: -130px;
-  }
-
-  .gearPanel {
-    grid-column: 2;
-
-  }
-
-  .speedPanel {
-    grid-column: 3;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-Margin-top: -150px;
-  }
-
-  .pedalRow {
-    grid-column: 4;
-    justify-content: center;
-Margin-top: 30px;
-
-  }
-}
-
-#introBox {
-  position: fixed;
-  top: 95px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 99999;
-
-  background: rgba(0,0,0,0.78);
-  color: white;
-
-  padding: 12px 22px;
-  border-radius: 12px;
-
-  font-size: 22px;
-  font-weight: bold;
-
-  display: none;
-  pointer-events: none;
-}
-
-#correctionBox {
-  position: fixed;
-  top: 75px;
-  left: 10px;
-  z-index: 99999;
-
-  background: rgba(0,0,0,0.65);
-  color: white;
-
-  padding: 5px 10px;
-  border-radius: 8px;
-
-  font-size: 16px;
-  font-weight: bold;
-
-  pointer-events: none;
-}
-
-
-</style>
-</head>
-
-<body>
-
-<h2>CE Grundfahraufgabe</h2>
-<p>20m gerade rückwärts an eine Rampe zum be-, oder entladen</p>
-
-
-<canvas id="game" width="1100" height="700"></canvas>
-<div id="watermark">
-  © HptFw Lang
-</div>
-
-
-
-<div id="correctionBox">Korrekturzüge: 0 / 4</div>
-
-<div id="introBox">Fahre an die rot markierte Rampe</div>
-
-<button id="restartBtn" style="
-display:none;
-position:fixed;
-top:85%;
-left:50%;
-transform:translate(-50%,-50%);
-font-size:28px;
-padding:20px 40px;
-z-index:1000;
-border:none;
-border-radius:12px;
-background:#1f8f3a;
-color:white;
-font-weight:bold;
-">
-Neu starten
-</button>
-
-<div class="controls">
-
-<div class="gearPanel">
-  <button id="gearRBtn">R</button>
-  <button id="gearDBtn">D</button>
-</div>
-
-<div class="pedalRow">
-<button class="pedal brake" id="brakeBtn">
-  <img id="brakeImg" src="brakepedal.png">
-</button>
-
-<button class="pedal gas" id="gasBtn">
-  <img id="gasImg" src="gaspedal.png">
-</button>
-</div>
-
-
-
-  <div class="steeringPanel">
-    <div id="steerDisplay">Lenkeinschlag: 0 %</div>
-
-    <div id="steeringWheel">
-      <img
-        id="steeringWheelImg"
-        src="Lenkrad.png"
-        draggable="false"
-      >
+<section id="gameScreen">
+  <div id="gameHeader">
+    <h2 id="gameTitle">CE Grundfahraufgabe</h2>
+    <p id="gameSubtitle"></p>
+  </div>
+
+  <canvas id="game"></canvas>
+
+  <div id="watermark">© HptFw Lang</div>
+  <div id="coordBox" class="hudBox">X: 0 | Y: 0</div>
+  <div id="correctionBox" class="hudBox">Korrekturzüge: 0 / 4</div>
+  <div id="introBox">Fahre an die rot markierte Rampe</div>
+
+  <button id="restartBtn">Neu starten</button>
+
+  <div class="controls">
+    <div class="steeringPanel">
+      <div id="steerDisplay">Lenkrad: 0°</div>
+      <div id="steeringWheel">
+        <img id="steeringWheelImg" src="Lenkrad.png" draggable="false">
+      </div>
     </div>
 
-   
+    <div class="gearPanel">
+      <button id="gearRBtn">R</button>
+      <button id="gearDBtn">D</button>
+    </div>
+
+    <div class="speedPanel">
+      <div id="speedDisplay">Max. Geschwindigkeit: 4</div>
+      <input type="range" id="speedSlider" min="1" max="10" value="4">
+      <button id="followBtn">Zentrieren</button>
+      <button id="guideBtn">Hilfslinien AUS</button>
+    </div>
+
+    <div class="pedalRow">
+      <button class="pedal" id="brakeBtn">
+        <img id="brakeImg" src="brakepedal.png">
+      </button>
+      <button class="pedal" id="gasBtn">
+        <img id="gasImg" src="gaspedal.png">
+      </button>
+    </div>
   </div>
-
-<div class="speedPanel">
-
-  <div id="speedDisplay">
-    Max. Geschwindigkeit: 4
-  </div>
-
-  <input
-    type="range"
-    id="speedSlider"
-    min="1"
-    max="10"
-    value="4"
-  >
-
-  <button id="followBtn">
-    Zentrieren
-  </button>
-
-</div>
-
-
-
+</section>
 
 <script>
+/* =========================================================
+   01 GLOBALE EINSTELLUNGEN
+   Diese Werte gelten für beide Aufgaben.
+   ========================================================= */
+
+const GLOBAL = {
+  worldWidth: 3500,
+  worldHeight: 2300,
+
+  truckLength: 360,
+  truckWidth: 90,
+
+  trailerLength: 260,
+  trailerWidth: 90,
+  drawbarLength: 100,
+
+  rearAxleOffset: -95,
+  wheelBase: 225,
+
+  maxWheelAngle: 450,
+  steeringFactor: 0.8,
+
+  drawbarCollisionWidth: 14,
+  drawbarCollisionOffset: 85,
+  drawbarMaxAngle: 1.35,
+
+  startMaxSpeed: 4,
+  minZoom: 0.20,
+  maxZoom: 2.50
+};
+
+/* =========================================================
+   02 AUFGABE 20m GERADE RÜCKWÄRTS
+   Hier nur Werte ändern, die zur 20m-Aufgabe gehören.
+   ========================================================= */
+
+const TASK_GERADE = {
+  id: "gerade",
+  title: "CE Grundfahraufgabe",
+  subtitle: "20m gerade rückwärts an eine Rampe zum be-, oder entladen",
+
+  mapImage: "kl_T_Bereich.png",
+  mapFallbackImage: null,
+
+  startZoom: 0.80,
+  cameraYOffset: 60,
+
+  startTruckX: 1115,
+  startTruckY: 1900,
+  startTruckAngle: Math.PI,
+
+  startTrailerX: 1540,
+  startTrailerY: 1900,
+  startTrailerAngle: Math.PI,
+
+  randomTrailerYOffset: 2,
+
+  worldLeft: 895,
+  worldRight: null,
+  worldTop: 700,
+  worldBottom: 2300,
+
+  rampX: 2560,
+  rampTopY: 1800,
+  rampBottomY: 2000,
+  minStopDistance: 5,
+  maxStopDistance: 50,
+  maxParallelAngle: 0.08,
+
+  maxCorrectionMoves: 4,
+  correctionMode: "nachErstemRueckwaerts",
+
+  introEnabled: true,
+  introText: "Fahre an die rot markierte Rampe",
+  introRampX: 2550,
+  introRampTopY: 1808,
+  introRampBottomY: 2007,
+
+  rectangularCollisionZones: [
+    { left: 1300, top: 1620, right: 1510, bottom: 1707 },
+    { left: 1312, top: 1230, right: 1520, bottom: 1327 }
+  ],
+
+  roundCollisionZones: [
+    { x: 2483, y: 1796, radius: 23.5 },
+    { x: 2483, y: 2012, radius: 23.5 },
+    { x: 2483, y: 1130, radius: 23.5 },
+    { x: 2483, y: 1350, radius: 23.5 },
+    { x: 2483, y: 2233, radius: 23.5 },
+    { x: 2483, y: 1573, radius: 23.5 },
+    { x: 2483, y: 905, radius: 23.5 }
+  ],
+
+  roadMarking: null,
+
+  successType: "rampe"
+};
+
+/* =========================================================
+   03 AUFGABE UMKEHREN
+   Hier nur Werte ändern, die zur Umkehren-Aufgabe gehören.
+   ========================================================= */
+
+const TASK_UMKEHREN = {
+  id: "umkehren",
+  title: "CE Grundfahraufgabe",
+  subtitle: "Umkehren durch Rückwärtsfahren nach links",
+
+  mapImage: "umgebung.png",
+  mapFallbackImage: "Umgebung.png",
+
+  startZoom: 0.65,
+  cameraYOffset: 100,
+
+  startTruckX: 1750,
+  startTruckY: 1100,
+  startTruckAngle: Math.PI,
+
+  startTrailerX: 2145,
+  startTrailerY: 1100,
+  startTrailerAngle: Math.PI,
+
+  randomTrailerYOffset: 2,
+
+  worldLeft: -20,
+  worldRight: 3500,
+  worldTop: null,
+  worldBottom: 2300,
+
+  maxCorrectionMoves: 4,
+  correctionMode: "abX",
+  correctionStartX: 1400,
+  correctionStopY: 1300,
+
+  introEnabled: false,
+
+  rectangularCollisionZones: [],
+  roundCollisionZones: [],
+
+  roadMarking: {
+    topLimitY: 975,
+    tolerance: 8,
+
+    leftTop: { x: 1450, y: 1365 },
+    leftBottom: { x: 1700, y: 1615 },
+
+    rightTop: { x: 2285, y: 1365 },
+    rightBottom: { x: 2030, y: 1610 },
+
+    visibleLines: [
+      { x1: 1100, y1: 975, x2: 2700, y2: 975 },
+      { x1: 1450, y1: 1365, x2: 1100, y2: 1365 },
+      { x1: 2280, y1: 1365, x2: 2700, y2: 1365 }
+    ]
+  },
+
+  successType: "umkehren",
+  successX: 2500,
+  successYMin: 900,
+  successYMax: 1300,
+  successAngleTolerance: 0.50,
+  successMinSpeed: 0.30
+};
+
+/* =========================================================
+   04 HTML ELEMENTE
+   ========================================================= */
+
+const menuScreen = document.getElementById("menuScreen");
+const gameScreen = document.getElementById("gameScreen");
+const fehlerGerade = document.getElementById("fehlerGerade");
+const fehlerUmkehren = document.getElementById("fehlerUmkehren");
+
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-function resizeCanvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight - 170;
-}
+const backBtn = document.getElementById("backBtn");
+const restartBtn = document.getElementById("restartBtn");
 
-window.addEventListener("resize", resizeCanvas);
-window.addEventListener("orientationchange", resizeCanvas);
+const gameTitle = document.getElementById("gameTitle");
+const gameSubtitle = document.getElementById("gameSubtitle");
 
-resizeCanvas();
-
-function screenToWorld(clientX, clientY) {
-  const rect = canvas.getBoundingClientRect();
-
-  const canvasX =
-    (clientX - rect.left) * (canvas.width / rect.width);
-
-  const canvasY =
-    (clientY - rect.top) * (canvas.height / rect.height);
-
-  return {
-    x: Math.round(camera.x + (canvasX - canvas.width / 2) / camera.zoom),
-    y: Math.round(camera.y + (canvasY - canvas.height / 2) / camera.zoom)
-  };
-}
-
-
-// rechte Maustaste zum Navigieren wie Steuerkreuz
-canvas.addEventListener("contextmenu", (e) => {
-  e.preventDefault();
-});
-
-canvas.addEventListener("mousedown", (e) => {
-  if (e.button !== 2) return;
-
-  draggingMouse = true;
-  followTruck = false;
-
-  lastMouseX = e.clientX;
-  lastMouseY = e.clientY;
-});
-
-canvas.addEventListener("mousemove", (e) => {
-  const rect = canvas.getBoundingClientRect();
-
-  if (draggingMouse) {
-    const dx =
-      (e.clientX - lastMouseX) *
-      (canvas.width / rect.width);
-
-    const dy =
-      (e.clientY - lastMouseY) *
-      (canvas.height / rect.height);
-
-    camera.x -= dx / camera.zoom;
-    camera.y -= dy / camera.zoom;
-
-    lastMouseX = e.clientX;
-    lastMouseY = e.clientY;
-  }
-
-  updateCoordBox(e.clientX, e.clientY);
-});
-
-canvas.addEventListener("mouseup", (e) => {
-  if (e.button === 2) {
-    draggingMouse = false;
-  }
-});
-
-canvas.addEventListener("mouseleave", () => {
-  draggingMouse = false;
-});
-
-canvas.addEventListener("wheel", (e) => {
-  e.preventDefault();
-
-  // Weltposition unter der Maus VOR dem Zoom merken
-  const beforeZoom = screenToWorld(e.clientX, e.clientY);
-
-  // Mausrad hoch = reinzoomen, runter = rauszoomen
-  const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
-
-  camera.zoom *= zoomFactor;
-
-  // Grenzen für den Zoom
-  camera.zoom = Math.max(0.2, Math.min(camera.zoom, 2.5));
-
-  // Weltposition unter der Maus NACH dem Zoom berechnen
-  const afterZoom = screenToWorld(e.clientX, e.clientY);
-
-  // Kamera so verschieben, dass unter der Maus derselbe Punkt bleibt
-  camera.x += beforeZoom.x - afterZoom.x;
-  camera.y += beforeZoom.y - afterZoom.y;
-
-  // Automatisches Folgen ausschalten
-  followTruck = false;
-
-}, { passive: false });
-canvas.addEventListener("touchstart", (e) => {
-
-  if (e.touches.length === 1) {
-
-    draggingMap = true;
-
-    lastTouchX = e.touches[0].clientX;
-    lastTouchY = e.touches[0].clientY;
-  }
-
-}, { passive:false });
-
-
-
-canvas.addEventListener("touchmove", (e) => {
-
-  if (draggingMap && e.touches.length === 1) {
-
-    const touch = e.touches[0];
-
-    const dx = touch.clientX - lastTouchX;
-    const dy = touch.clientY - lastTouchY;
-
-    followTruck = false;
-
-    camera.x -= dx / camera.zoom;
-    camera.y -= dy / camera.zoom;
-
-    lastTouchX = touch.clientX;
-    lastTouchY = touch.clientY;
-  }
-
-}, { passive:false });
-
-canvas.addEventListener("touchstart", (e) => {
-  if (e.touches.length === 2) {
-    e.preventDefault();
-
-    draggingMap = false;
-
-    const dx = e.touches[0].clientX - e.touches[1].clientX;
-    const dy = e.touches[0].clientY - e.touches[1].clientY;
-
-    pinchStartDistance = Math.hypot(dx, dy);
-    startZoom = camera.zoom;
-  }
-}, { passive: false });
-
-canvas.addEventListener("touchmove", (e) => {
-  if (e.touches.length === 2 && pinchStartDistance !== null) {
-    e.preventDefault();
-
-    const dx = e.touches[0].clientX - e.touches[1].clientX;
-    const dy = e.touches[0].clientY - e.touches[1].clientY;
-
-    const currentDistance = Math.hypot(dx, dy);
-    const zoomFactor = currentDistance / pinchStartDistance;
-
-    camera.zoom = startZoom * zoomFactor;
-    camera.zoom = Math.max(0.3, Math.min(camera.zoom, 1.8));
-  }
-}, { passive: false });
-
-canvas.addEventListener("touchend", (e) => {
-  if (e.touches.length < 2) {
-    pinchStartDistance = null;
-  }
-});
-
-canvas.addEventListener("touchend", () => {
-  draggingMap = false;
-});
+const correctionBox = document.getElementById("correctionBox");
+const coordBox = document.getElementById("coordBox");
+const introBox = document.getElementById("introBox");
+const controls = document.querySelector(".controls");
 
 const gasBtn = document.getElementById("gasBtn");
 const brakeBtn = document.getElementById("brakeBtn");
 const gasImg = document.getElementById("gasImg");
-const brakeImg = document.getElementById("brakeImg");const gearRBtn = document.getElementById("gearRBtn");
+const brakeImg = document.getElementById("brakeImg");
+
+const gearRBtn = document.getElementById("gearRBtn");
 const gearDBtn = document.getElementById("gearDBtn");
+
 const steeringWheel = document.getElementById("steeringWheel");
+const steeringWheelImg = document.getElementById("steeringWheelImg");
 const steerDisplay = document.getElementById("steerDisplay");
+
 const speedSlider = document.getElementById("speedSlider");
 const speedDisplay = document.getElementById("speedDisplay");
-const restartBtn = document.getElementById("restartBtn");
 const followBtn = document.getElementById("followBtn");
-let maxSpeed = 4;
+const guideBtn = document.getElementById("guideBtn");
 
-const correctionBox = document.getElementById("correctionBox");
-const introBox = document.getElementById("introBox");
-const controls = document.querySelector(".controls");
+/* =========================================================
+   05 SPIELZUSTAND
+   ========================================================= */
 
+let activeTask = null;
+let gameRunning = false;
 
-const keys = {};
-document.addEventListener("keydown", e => {
-  keys[e.key.toLowerCase()] = true;
-  if (["w", "a", "s", "d", "r", " "].includes(e.key.toLowerCase())) {
-    e.preventDefault();
-  }
-});
+let truck = null;
+let trailer = null;
 
-followBtn.addEventListener("click", () => {
+let crashed = false;
+let crashReason = "";
+let taskCompleted = false;
 
-  followTruck = true;
-  introActive = false;
+let startTime = Date.now();
+let finishTime = null;
 
-  const hitchX =
-    truck.x - Math.cos(truck.angle) * truck.length / 2;
+let correctionMoves = 0;
+let correctionCounterStarted = false;
+let correctionCounterStopped = false;
+let hasReversedOnce = false;
+let wasReversing = false;
 
-  const hitchY =
-    truck.y - Math.sin(truck.angle) * truck.length / 2;
-
-  camera.x = hitchX;
-  camera.y = hitchY - 20;
-});
-
-document.addEventListener("keyup", e => {
-  keys[e.key.toLowerCase()] = false;
-});
-
+let maxSpeed = GLOBAL.startMaxSpeed;
+let gear = "D";
 let gasPressed = false;
 let brakePressed = false;
-let leftPressed = false;
-let rightPressed = false;
+
 let wheelAngle = 0;
 let wheelDragging = false;
 let lastPointerAngle = 0;
-let gear = "D";
-const maxWheelAngle = 450;
+let steeringValue = 0;
 
+let followTruck = true;
+let draggingMap = false;
+let draggingMouse = false;
+let lastTouchX = 0;
+let lastTouchY = 0;
+let lastMouseX = 0;
+let lastMouseY = 0;
+let pinchStartDistance = null;
+let pinchStartZoom = 1;
+
+let introActive = false;
+let introStartTime = 0;
+
+const camera = {
+  zoom: 0.65,
+  x: 0,
+  y: 0
+};
+
+const keys = {};
+let showReverseGuideLines = false;
+
+/* =========================================================
+   06 BILDER LADEN
+   ========================================================= */
+
+const envImage = new Image();
+let envLoaded = false;
+
+const truckImageRaw = new Image();
+const trailerImageRaw = new Image();
+
+const truckSpriteCanvas = document.createElement("canvas");
+const truckSpriteCtx = truckSpriteCanvas.getContext("2d");
+let truckSpriteLoaded = false;
+
+const trailerSpriteCanvas = document.createElement("canvas");
+const trailerSpriteCtx = trailerSpriteCanvas.getContext("2d");
+let trailerSpriteLoaded = false;
+
+truckImageRaw.onload = function () {
+  prepareSprite(truckImageRaw, truckSpriteCanvas, truckSpriteCtx);
+  truckSpriteLoaded = true;
+};
+
+trailerImageRaw.onload = function () {
+  prepareSprite(trailerImageRaw, trailerSpriteCanvas, trailerSpriteCtx);
+  trailerSpriteLoaded = true;
+};
+
+truckImageRaw.src = "fahrzeug_sprite_1.png";
+trailerImageRaw.src = "fahrzeug_sprite_2.png";
+
+function prepareSprite(image, targetCanvas, targetCtx) {
+  targetCanvas.width = image.width;
+  targetCanvas.height = image.height;
+  targetCtx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
+  targetCtx.drawImage(image, 0, 0);
+}
+
+function loadMapImage(task) {
+  envLoaded = false;
+
+  envImage.onload = function () {
+    envLoaded = true;
+  };
+
+  envImage.onerror = function () {
+    if (task.mapFallbackImage) {
+      envImage.onerror = null;
+      envImage.src = task.mapFallbackImage;
+    }
+  };
+
+  envImage.src = task.mapImage;
+}
+
+/* =========================================================
+   07 MENÜ UND AUFGABENSTART
+   ========================================================= */
+
+function startLevel(taskId) {
+  if (taskId === "gerade") {
+    activeTask = TASK_GERADE;
+  }
+
+  if (taskId === "umkehren") {
+    activeTask = TASK_UMKEHREN;
+  }
+
+  menuScreen.style.display = "none";
+  fehlerGerade.style.display = "none";
+  fehlerUmkehren.style.display = "none";
+  gameScreen.style.display = "block";
+  backBtn.style.display = "block";
+
+  gameTitle.textContent = activeTask.title;
+  gameSubtitle.textContent = activeTask.subtitle;
+
+  loadMapImage(activeTask);
+  resetGame();
+  gameRunning = true;
+}
+
+function showMenu() {
+  gameRunning = false;
+  gameScreen.style.display = "none";
+  menuScreen.style.display = "flex";
+  fehlerGerade.style.display = "none";
+  fehlerUmkehren.style.display = "none";
+  backBtn.style.display = "none";
+}
+
+function showFehler(taskId) {
+  menuScreen.style.display = "none";
+  gameScreen.style.display = "none";
+  backBtn.style.display = "none";
+  fehlerGerade.style.display = "none";
+  fehlerUmkehren.style.display = "none";
+
+  if (taskId === "gerade") {
+    fehlerGerade.style.display = "flex";
+  }
+
+  if (taskId === "umkehren") {
+    fehlerUmkehren.style.display = "flex";
+  }
+}
+
+/* =========================================================
+   08 RESET UND STARTWERTE
+   ========================================================= */
+
+function resetGame() {
+  crashed = false;
+  crashReason = "";
+  taskCompleted = false;
+
+  startTime = Date.now();
+  finishTime = null;
+
+  correctionMoves = 0;
+  correctionCounterStarted = false;
+  correctionCounterStopped = false;
+  hasReversedOnce = false;
+  wasReversing = false;
+
+  gear = "D";
+  gasPressed = false;
+  brakePressed = false;
+  wheelAngle = 0;
+  steeringValue = 0;
+
+  gasImg.src = "gaspedal.png";
+  brakeImg.src = "brakepedal.png";
+  updateGearButtons();
+  updateWheelVisual();
+
+const randomYOffset =
+  (Math.random() < 0.5 ? -1 : 1) *
+  (Math.floor(Math.random() * 2) + 1);
+
+  truck = {
+    x: activeTask.startTruckX,
+    y: activeTask.startTruckY,
+    angle: activeTask.startTruckAngle,
+    speed: 0,
+    length: GLOBAL.truckLength,
+    width: GLOBAL.truckWidth,
+    steeringAngle: 0
+  };
+
+  trailer = {
+    x: activeTask.startTrailerX,
+    y: activeTask.startTrailerY + randomYOffset,
+    angle: activeTask.startTrailerAngle,
+    length: GLOBAL.trailerLength,
+    width: GLOBAL.trailerWidth,
+    drawbarAngle: activeTask.startTrailerAngle,
+    drawbarLength: GLOBAL.drawbarLength,
+    frontAxleX: null,
+    frontAxleY: null
+  };
+
+  setTrailerStartPositionBehindTruck(randomYOffset);
+
+  camera.zoom = activeTask.startZoom;
+  centerCameraOnHitch();
+  followTruck = true;
+  
+  showReverseGuideLines = false;
+
+  guideBtn.textContent = "Hilfslinien AUS";
+
+  controls.style.display = "grid";
+  restartBtn.style.display = "none";
+  correctionBox.textContent = "Korrekturzüge: 0 / " + activeTask.maxCorrectionMoves;
+
+  if (activeTask.introEnabled) {
+    startIntro();
+  } else {
+    introActive = false;
+    introBox.style.display = "none";
+  }
+}
+
+function setTrailerStartPositionBehindTruck(randomYOffset) {
+  const hitchPoint = getHitchPoint();
+  const frontAxleOffset = trailer.length / 2 - 25;
+
+  trailer.drawbarAngle = truck.angle;
+  trailer.angle = truck.angle;
+
+  trailer.frontAxleX =
+    hitchPoint.x - Math.cos(trailer.drawbarAngle) * trailer.drawbarLength;
+
+  trailer.frontAxleY =
+    hitchPoint.y - Math.sin(trailer.drawbarAngle) * trailer.drawbarLength;
+
+  trailer.x =
+    trailer.frontAxleX - Math.cos(trailer.angle) * frontAxleOffset;
+
+  trailer.y =
+    trailer.frontAxleY - Math.sin(trailer.angle) * frontAxleOffset + randomYOffset;
+}
+
+/* =========================================================
+   09 EINGABEN: TASTATUR, PEDALE, LENKRAD, MAUS, TOUCH
+   ========================================================= */
+
+document.getElementById("startGeradeBtn").addEventListener("click", function () {
+  startLevel("gerade");
+});
+
+document.getElementById("startUmkehrenBtn").addEventListener("click", function () {
+  startLevel("umkehren");
+});
+
+document.getElementById("fehlerGeradeBtn").addEventListener("click", function () {
+  showFehler("gerade");
+});
+
+document.getElementById("fehlerUmkehrenBtn").addEventListener("click", function () {
+  showFehler("umkehren");
+});
+
+for (const btn of document.querySelectorAll(".backToMenuBtn")) {
+  btn.addEventListener("click", showMenu);
+}
+
+backBtn.addEventListener("click", showMenu);
+restartBtn.addEventListener("click", resetGame);
 
 function holdButton(button, setter) {
-  button.addEventListener("mousedown", () => setter(true));
-  button.addEventListener("mouseup", () => setter(false));
-  button.addEventListener("mouseleave", () => setter(false));
+  button.addEventListener("mousedown", function () { setter(true); });
+  button.addEventListener("mouseup", function () { setter(false); });
+  button.addEventListener("mouseleave", function () { setter(false); });
 
-  button.addEventListener("touchstart", e => {
+  button.addEventListener("touchstart", function (e) {
     e.preventDefault();
     setter(true);
   }, { passive: false });
 
-  button.addEventListener("touchend", e => {
+  button.addEventListener("touchend", function (e) {
     e.preventDefault();
     setter(false);
   });
 
-  button.addEventListener("touchcancel", () => setter(false));
+  button.addEventListener("touchcancel", function () {
+    setter(false);
+  });
 }
 
-holdButton(gasBtn, v => {
-  gasPressed = v;
-
-  gasImg.src = v
-    ? "gaspedalpressed.png"
-    : "gaspedal.png";
+holdButton(gasBtn, function (value) {
+  gasPressed = value;
+  gasImg.src = value ? "gaspedalpressed.png" : "gaspedal.png";
 });
 
-holdButton(brakeBtn, v => {
-  brakePressed = v;
-
-  brakeImg.src = v
-    ? "brakepedalpressed.png"
-    : "brakepedal.png";
+holdButton(brakeBtn, function (value) {
+  brakePressed = value;
+  brakeImg.src = value ? "brakepedalpressed.png" : "brakepedal.png";
 });
 
-
-function updateGearButtons() {
-  gearRBtn.classList.toggle("activeGear", gear === "R");
-  gearDBtn.classList.toggle("activeGear", gear === "D");
-}
-
-gearRBtn.addEventListener("click", () => {
+gearRBtn.addEventListener("click", function () {
   gear = "R";
   updateGearButtons();
 });
 
-gearDBtn.addEventListener("click", () => {
+gearDBtn.addEventListener("click", function () {
   gear = "D";
   updateGearButtons();
 });
 
-updateGearButtons();
+speedSlider.addEventListener("input", function () {
+  maxSpeed = Number(speedSlider.value);
+  speedDisplay.textContent = "Max. Geschwindigkeit: " + maxSpeed;
+});
+
+followBtn.addEventListener("click", function () {
+  followTruck = true;
+  introActive = false;
+  introBox.style.display = "none";
+  centerCameraOnHitch();
+
+guideBtn.addEventListener("click", function () {
+
+  showReverseGuideLines = !showReverseGuideLines;
+
+  guideBtn.textContent =
+    showReverseGuideLines
+      ? "Hilfslinien EIN"
+      : "Hilfslinien AUS";
+});
+});
+
+document.addEventListener("keydown", function (e) {
+  keys[e.key.toLowerCase()] = true;
+  if (e.key.toLowerCase() === "h") {
+    showReverseGuideLines = !showReverseGuideLines;
+  }
+
+  if (["w", "a", "s", "d", "r", " ", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(e.key.toLowerCase())) {
+    e.preventDefault();
+  }
+});
+
+document.addEventListener("keyup", function (e) {
+  keys[e.key.toLowerCase()] = false;
+});
 
 function getPointerAngle(e) {
   const rect = steeringWheel.getBoundingClientRect();
@@ -1081,21 +1117,13 @@ function getPointerAngle(e) {
   return Math.atan2(e.clientY - cy, e.clientX - cx) * 180 / Math.PI;
 }
 
-function updateWheelVisual() {
- document.getElementById("steeringWheelImg").style.transform =
-  "rotate(" + wheelAngle + "deg)";
-  steeringValue = wheelAngle / maxWheelAngle;
-  truck.steeringAngle = steeringValue * 0.8;
-  steerDisplay.innerText = "Lenkrad: " + Math.round(wheelAngle) + "°";
-}
-
-steeringWheel.addEventListener("pointerdown", e => {
+steeringWheel.addEventListener("pointerdown", function (e) {
   wheelDragging = true;
   lastPointerAngle = getPointerAngle(e);
   steeringWheel.setPointerCapture(e.pointerId);
 });
 
-steeringWheel.addEventListener("pointermove", e => {
+steeringWheel.addEventListener("pointermove", function (e) {
   if (!wheelDragging) return;
 
   const currentAngle = getPointerAngle(e);
@@ -1105,461 +1133,165 @@ steeringWheel.addEventListener("pointermove", e => {
   if (diff < -180) diff += 360;
 
   wheelAngle += diff;
-  wheelAngle = Math.max(-maxWheelAngle, Math.min(maxWheelAngle, wheelAngle));
+  wheelAngle = clamp(wheelAngle, -GLOBAL.maxWheelAngle, GLOBAL.maxWheelAngle);
 
   lastPointerAngle = currentAngle;
   updateWheelVisual();
 });
 
-steeringWheel.addEventListener("pointerup", e => {
+steeringWheel.addEventListener("pointerup", function (e) {
   wheelDragging = false;
   steeringWheel.releasePointerCapture(e.pointerId);
 });
 
-steeringWheel.addEventListener("pointercancel", () => {
+steeringWheel.addEventListener("pointercancel", function () {
   wheelDragging = false;
 });
 
-speedSlider.addEventListener("input", () => {
-  maxSpeed = Number(speedSlider.value);
-  speedDisplay.innerText =
-    "Max. Geschwindigkeit: " + maxSpeed;
+canvas.addEventListener("contextmenu", function (e) {
+  e.preventDefault();
 });
 
+canvas.addEventListener("mousedown", function (e) {
+  if (e.button !== 2) return;
 
-// Bilder laden
-const envImage = new Image();
-const truckImageRaw = new Image();
-const trailerImageRaw = new Image();
-const steeringWheelImage = new Image();
-steeringWheelImage.src = "Lenkrad.png";
-
-
-let envLoaded = false;
-let truckSpriteLoaded = false;
-let trailerSpriteLoaded = false;
-
-envImage.src = "kl_T_Bereich.png";
-truckImageRaw.src = "fahrzeug_sprite_1.png";
-trailerImageRaw.src = "fahrzeug_sprite_2.png";
-
-envImage.onload = () => envLoaded = true;
-
-const truckSpriteCanvas = document.createElement("canvas");
-const truckSpriteCtx = truckSpriteCanvas.getContext("2d");
-
-const trailerSpriteCanvas = document.createElement("canvas");
-const trailerSpriteCtx = trailerSpriteCanvas.getContext("2d");
-
-truckImageRaw.onload = () => {
-  prepareTransparentSprite(truckImageRaw, truckSpriteCanvas, truckSpriteCtx);
-  truckSpriteLoaded = true;
-};
-
-trailerImageRaw.onload = () => {
-  prepareTransparentSprite(trailerImageRaw, trailerSpriteCanvas, trailerSpriteCtx);
-  trailerSpriteLoaded = true;
-};
-
-function prepareTransparentSprite(image, spriteCanvas, spriteCtx) {
-    spriteCanvas.width = image.width;
-    spriteCanvas.height = image.height;
-
-    spriteCtx.clearRect(0,0,spriteCanvas.width,spriteCanvas.height);
-    spriteCtx.drawImage(image,0,0);
-}
-const world = {
-  width: 3500,
-  height: 2300
-};
-
-const camera = {
-  zoom: 0.65,
-  x: 0,
-  y: 0
-};
-
-let pinchStartDistance = null;
-let startZoom = camera.zoom;
-let followTruck = true;
-let draggingMap = false;
-let lastTouchX = 0;
-let lastTouchY = 0;
-let draggingMouse = false;
-let lastMouseX = 0;
-let lastMouseY = 0;
-
-let introPlayed = false;
-let introActive = false;
-let introStartTime = 0;
-
-const introCameraStart = {
-  x: 1750,
-  y: 1900,
-  zoom: 0.8
-};
-
-const introCameraTarget = {
-  x: 2550,
-  y: 1900,
-  zoom: 0.8
-};
-
-let truck, trailer;
-let crashed = false;
-let crashReason = "KOLLISION!";
-let taskCompleted = false;
-let markingViolationPoint = null;
-
-let steeringValue = 0;
-let correctionMoves = 0;
-
-let startTime = Date.now();
-let finishTime = null;
-
-let hasReversedOnce = false;
-let wasReversing = false;
-let correctionCounterStopped = false;
-let correctionCounterStarted = false;
-const collisionZones = [
-  {
-    left: 1300,
-    top: 1620,
-    right: 1510,
-    bottom: 1707
-  },
-
-  {
-    left: 1312,
-    top: 1230,
-    right: 1520,
-    bottom: 1327
-  }
-];
-
-const roundCollisionZones = [
-  {
-    x: 2483,
-    y: 1796,
-    radius: 23.5
-  },
-
-  {
-    x: 2483,
-    y: 2012,
-    radius: 23.5
-  },
-  {
-    x: 2483,
-    y: 1130,
-    radius: 23.5
-  },
-
-  {
-    x: 2483,
-    y: 1350,
-    radius: 23.5
-  },
-
-  {
-    x: 2483,
-    y: 2233,
-    radius: 23.5
-  },
-
-  {
-    x: 2483,
-    y: 1573,
-    radius: 23.5
- },
-
- {
-    x: 2483,
-    y: 905,
-    radius: 23.5
-  }
-];
-
-const task20m = {
-  rampX: 2560,
-  rampTopY: 1800,
-  rampBottomY: 2000,
-
-  minStopDistance: 5,    // ca. 0,1 m
-  maxStopDistance: 50,   // ca. 1 m
-
-  maxForwardCorrections: 4
-};
-
-function startIntro() {
-  if (introPlayed) return;
-
-  introPlayed = true;
-  introActive = true;
-  introStartTime = performance.now();
-
+  draggingMouse = true;
   followTruck = false;
-
-const hitchX =
-  truck.x - Math.cos(truck.angle) * truck.length / 2;
-
-const hitchY =
-  truck.y - Math.sin(truck.angle) * truck.length / 2;
-
-camera.x = hitchX;
-camera.y = hitchY;
-
-  if (introBox) {
-    introBox.style.display = "block";
-  }
-}
-
-function updateIntro() {
-  if (!introActive) return;
-
-  const elapsed = performance.now() - introStartTime;
-const hitchX =
-  truck.x - Math.cos(truck.angle) * truck.length / 2;
-
-const hitchY =
-  truck.y - Math.sin(truck.angle) * truck.length / 2;
-
-const startHoldDuration = 1000;
-const moveToRampDuration = 1000;
-const rampHoldDuration = 1000;
-const returnDuration = 650;
-
-const totalDuration =
-  startHoldDuration +
-  moveToRampDuration +
-  rampHoldDuration +
-  returnDuration;
-
-  function easeInOut(t) {
-    return t < 0.5
-      ? 2 * t * t
-      : 1 - Math.pow(-2 * t + 2, 2) / 2;
-  }
-
-// Startposition halten
-if (elapsed < startHoldDuration) {
-  return;
-}
-
-// Zur Rampe fahren
-if (elapsed < startHoldDuration + moveToRampDuration) {
-
-  const t = easeInOut(
-    (elapsed - startHoldDuration) /
-    moveToRampDuration
-  );
-
-  camera.x =
-    hitchX +
-    (introCameraTarget.x - hitchX) * t;
-
-  camera.y =
-    hitchY +
-    (introCameraTarget.y - hitchY) * t;
-
-  return;
-}
-
-// Rampe halten
-if (
-  elapsed <
-  startHoldDuration +
-  moveToRampDuration +
-  rampHoldDuration
-) {
-
-  camera.x = introCameraTarget.x;
-  camera.y = introCameraTarget.y;
-
-  return;
-}
-
-// Zurück zur Kupplung
-if (elapsed < totalDuration) {
-
-  const t = easeInOut(
-    (
-      elapsed -
-      startHoldDuration -
-      moveToRampDuration -
-      rampHoldDuration
-    ) / returnDuration
-  );
-
-  camera.x =
-    introCameraTarget.x +
-    (hitchX - introCameraTarget.x) * t;
-
-  camera.y =
-    introCameraTarget.y +
-    (hitchY - introCameraTarget.y) * t;
-
-  return;
-}
-introActive = false;
-
-camera.x = hitchX;
-camera.y = hitchY;
-camera.zoom = introCameraStart.zoom;
-
-if (introBox) {
-  introBox.style.display = "none";
-}
-
-followTruck = true;
-}
-
-function reset() {
-
-controls.style.display = "";
-
-startTime = Date.now();
-finishTime = null;
-
-  crashed = false;
-  crashReason = "";
-  taskCompleted = false;
-correctionMoves = 0;
-
-
-
-correctionCounterStopped = false;
-correctionCounterStarted = false;
-
-  steeringValue = 0;
-const randomYOffset =
-  (Math.random() < 0.5 ? -1 : 1) *
-  (Math.floor(Math.random() * 2) + 1);
-
-  truck = {
-  x: 1115,
-  y: 1900,
-  angle: Math.PI,
-  speed: 0,
-  length: 360,
-  width: 90,
-  steeringAngle: 0
-};
-
-trailer = {
-  x: 1540,
-  y: 1900 + randomYOffset,
-  angle: Math.PI,
-  length: 260,
-  width: 90,
-  drawbarAngle: Math.PI,
-  drawbarLength: 100
-};
-}
-
-
-forwardCorrectionCount = 0;
-wasDrivingForward = false;
-wheelAngle = 0;
-
-reset();
-startIntro();
-
-restartBtn.style.display = "none";
-
-restartBtn.addEventListener("click", () => {
-
-  crashed = false;
-  taskCompleted = false;
-  crashReason = "";
-
-  forwardCorrectionCount = 0;
-  wasDrivingForward = false;
-
-  wheelAngle = 0;
-
-followTruck = true;
-camera.x = 1750;
-camera.y = 1900;
-camera.zoom = 0.8;
-
-  reset();
-
-  restartBtn.style.display = "none";
+  lastMouseX = e.clientX;
+  lastMouseY = e.clientY;
 });
 
-function normalizeAngle(angle) {
-  while (angle > Math.PI) angle -= Math.PI * 2;
-  while (angle < -Math.PI) angle += Math.PI * 2;
-  return angle;
-}
+canvas.addEventListener("mousemove", function (e) {
+  updateCoordBox(e.clientX, e.clientY);
 
-function angleLerp(current, target, factor) {
-  const diff = normalizeAngle(target - current);
-  return current + diff * factor;
+  if (!draggingMouse) return;
 
-}
-if (correctionBox) {
-  correctionBox.innerText = "Korrekturzüge: 0 / 4";
-}
+  const dx = e.clientX - lastMouseX;
+  const dy = e.clientY - lastMouseY;
 
-function update() {
+  camera.x -= dx / camera.zoom;
+  camera.y -= dy / camera.zoom;
 
-function updateCorrectionCounter() {
+  lastMouseX = e.clientX;
+  lastMouseY = e.clientY;
+});
 
-  if (correctionCounterStopped) return;
+canvas.addEventListener("mouseup", function () {
+  draggingMouse = false;
+});
 
-  const isReversingNow = truck.speed < -0.05;
-  const isDrivingForwardNow = truck.speed > 0.05;
+canvas.addEventListener("mouseleave", function () {
+  draggingMouse = false;
+});
 
-  if (isReversingNow) {
-    hasReversedOnce = true;
-    wasReversing = true;
+canvas.addEventListener("wheel", function (e) {
+  e.preventDefault();
+
+  const before = screenToWorld(e.clientX, e.clientY);
+  const factor = e.deltaY < 0 ? 1.1 : 0.9;
+
+  camera.zoom *= factor;
+  camera.zoom = clamp(camera.zoom, GLOBAL.minZoom, GLOBAL.maxZoom);
+
+  const after = screenToWorld(e.clientX, e.clientY);
+
+  camera.x += before.x - after.x;
+  camera.y += before.y - after.y;
+  followTruck = false;
+}, { passive: false });
+
+canvas.addEventListener("touchstart", function (e) {
+  if (e.touches.length === 1) {
+    draggingMap = true;
+    lastTouchX = e.touches[0].clientX;
+    lastTouchY = e.touches[0].clientY;
   }
 
-  if (
-    hasReversedOnce &&
-    wasReversing &&
-    isDrivingForwardNow
-  ) {
-    correctionMoves++;
-    wasReversing = false;
+  if (e.touches.length === 2) {
+    e.preventDefault();
+    draggingMap = false;
 
-    if (correctionMoves > 4) {
-      crashed = true;
-      crashReason = "ZU VIELE KORREKTURZÜGE!";
-      truck.speed = 0;
-      restartBtn.style.display = "block";
-      controls.style.display = "none";
-    }
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+
+    pinchStartDistance = Math.hypot(dx, dy);
+    pinchStartZoom = camera.zoom;
   }
+}, { passive: false });
+
+canvas.addEventListener("touchmove", function (e) {
+  if (e.touches.length === 1) {
+    updateCoordBox(e.touches[0].clientX, e.touches[0].clientY);
+  }
+
+  if (draggingMap && e.touches.length === 1) {
+    const touch = e.touches[0];
+    const dx = touch.clientX - lastTouchX;
+    const dy = touch.clientY - lastTouchY;
+
+    followTruck = false;
+    camera.x -= dx / camera.zoom;
+    camera.y -= dy / camera.zoom;
+
+    lastTouchX = touch.clientX;
+    lastTouchY = touch.clientY;
+  }
+
+  if (e.touches.length === 2 && pinchStartDistance !== null) {
+    e.preventDefault();
+
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+    const currentDistance = Math.hypot(dx, dy);
+
+    camera.zoom = pinchStartZoom * (currentDistance / pinchStartDistance);
+    camera.zoom = clamp(camera.zoom, GLOBAL.minZoom, GLOBAL.maxZoom);
+  }
+}, { passive: false });
+
+canvas.addEventListener("touchend", function (e) {
+  if (e.touches.length < 2) {
+    pinchStartDistance = null;
+  }
+
+  if (e.touches.length === 0) {
+    draggingMap = false;
+  }
+});
+
+/* =========================================================
+   10 FAHRPHYSIK - NUR EINMAL FÜR BEIDE AUFGABEN
+   ========================================================= */
+
+function updateGame() {
+  if (!gameRunning || !activeTask || !truck || !trailer) return;
+  if (crashed || taskCompleted) return;
+
+  if (keys["r"]) {
+    resetGame();
+    return;
+  }
+
+  updateSpeed();
+  updateSteering();
+  updateTruckPhysics();
+  updateTrailerPhysics();
+  updateCorrectionCounter();
+  checkCrashAndSuccess();
 }
 
-  if (keys["r"]) reset();
-  if (crashed) return;
-
- if (checkTaskCompleted()) {
-  taskCompleted = true;
-  finishTime = Date.now();
-  restartBtn.style.display = "block";
-controls.style.display = "none";
-}
-  if (keys["w"]|| keys["arrowup"]) {
+function updateSpeed() {
+  if (keys["w"] || keys["arrowup"]) {
     truck.speed += 0.01 * maxSpeed;
   }
 
-  if (keys["s"]|| keys["arrowdown"]) {
+  if (keys["s"] || keys["arrowdown"]) {
     truck.speed -= 0.01 * maxSpeed;
   }
 
   if (gasPressed) {
-    if (gear === "D") {
-      truck.speed += 0.01 * maxSpeed;
-    }
-
-    if (gear === "R") {
-      truck.speed -= 0.01 * maxSpeed;
-    }
+    if (gear === "D") truck.speed += 0.01 * maxSpeed;
+    if (gear === "R") truck.speed -= 0.01 * maxSpeed;
   }
 
   if (brakePressed) {
@@ -1571,40 +1303,21 @@ controls.style.display = "none";
   }
 
   truck.speed *= 0.968;
+  truck.speed = clamp(truck.speed, -maxSpeed, maxSpeed);
+}
 
-  truck.speed = Math.max(
-    Math.min(truck.speed, maxSpeed),
-    -maxSpeed
-  );
-
-  const isDrivingForward = truck.speed > 0.15;
-
-  if (isDrivingForward && !wasDrivingForward) {
-    forwardCorrectionCount++;
-  }
-
-  wasDrivingForward = isDrivingForward;
-
-  if (forwardCorrectionCount > task20m.maxForwardCorrections) {
-    crashed = true;
-    crashReason = "ZU VIELE KORREKTURZÜGE!";
-    truck.speed = 0;
-    restartBtn.style.display = "block";
-    controls.style.display = "none";
-    return;
-  }
-
-  if (keys["a"]|| keys["arrowleft"]) {
+function updateSteering() {
+  if (keys["a"] || keys["arrowleft"]) {
     wheelAngle -= 8;
   }
 
-  if (keys["d"]|| keys["arrowright"]) {
+  if (keys["d"] || keys["arrowright"]) {
     wheelAngle += 8;
   }
 
-  wheelAngle = Math.max(-maxWheelAngle, Math.min(maxWheelAngle, wheelAngle));
+  wheelAngle = clamp(wheelAngle, -GLOBAL.maxWheelAngle, GLOBAL.maxWheelAngle);
 
-  if (!wheelDragging && !keys["a"] && !keys["d"] && Math.abs(truck.speed) > 0.05) {
+  if (!wheelDragging && !keys["a"] && !keys["d"] && !keys["arrowleft"] && !keys["arrowright"] && Math.abs(truck.speed) > 0.05) {
     wheelAngle *= 0.985;
 
     if (Math.abs(wheelAngle) < 1) {
@@ -1613,289 +1326,345 @@ controls.style.display = "none";
   }
 
   updateWheelVisual();
+}
 
-  const rearAxleOffset = -95;
-  const wheelBase = 225;
+function updateTruckPhysics() {
+  if (Math.abs(truck.speed) <= 0.03) return;
 
-  if (Math.abs(truck.speed) > 0.03) {
-    const rearX = truck.x + Math.cos(truck.angle) * rearAxleOffset;
-    const rearY = truck.y + Math.sin(truck.angle) * rearAxleOffset;
+  const rearX = truck.x + Math.cos(truck.angle) * GLOBAL.rearAxleOffset;
+  const rearY = truck.y + Math.sin(truck.angle) * GLOBAL.rearAxleOffset;
 
-    const turnAmount =
-      (truck.speed / wheelBase) * Math.tan(truck.steeringAngle);
+  const turnAmount =
+    (truck.speed / GLOBAL.wheelBase) *
+    Math.tan(truck.steeringAngle);
 
-    const newRearX = rearX + Math.cos(truck.angle) * truck.speed;
-    const newRearY = rearY + Math.sin(truck.angle) * truck.speed;
+  const newRearX = rearX + Math.cos(truck.angle) * truck.speed;
+  const newRearY = rearY + Math.sin(truck.angle) * truck.speed;
 
-    truck.angle += turnAmount;
+  truck.angle += turnAmount;
 
-    truck.x = newRearX - Math.cos(truck.angle) * rearAxleOffset;
-    truck.y = newRearY - Math.sin(truck.angle) * rearAxleOffset;
+  truck.x = newRearX - Math.cos(truck.angle) * GLOBAL.rearAxleOffset;
+  truck.y = newRearY - Math.sin(truck.angle) * GLOBAL.rearAxleOffset;
+}
+
+function updateTrailerPhysics() {
+  const hitchPoint = getHitchPoint();
+  const frontAxleOffset = trailer.length / 2 - 25;
+
+  const currentFrontX =
+    trailer.x + Math.cos(trailer.angle) * frontAxleOffset;
+
+  const currentFrontY =
+    trailer.y + Math.sin(trailer.angle) * frontAxleOffset;
+
+  const dx = hitchPoint.x - currentFrontX;
+  const dy = hitchPoint.y - currentFrontY;
+
+  trailer.drawbarAngle = Math.atan2(dy, dx);
+
+  const newFrontAxleX =
+    hitchPoint.x - Math.cos(trailer.drawbarAngle) * trailer.drawbarLength;
+
+  const newFrontAxleY =
+    hitchPoint.y - Math.sin(trailer.drawbarAngle) * trailer.drawbarLength;
+
+  trailer.angle = Math.atan2(
+    newFrontAxleY - trailer.y,
+    newFrontAxleX - trailer.x
+  );
+
+  trailer.x =
+    newFrontAxleX - Math.cos(trailer.angle) * frontAxleOffset;
+
+  trailer.y =
+    newFrontAxleY - Math.sin(trailer.angle) * frontAxleOffset;
+
+  trailer.frontAxleX = newFrontAxleX;
+  trailer.frontAxleY = newFrontAxleY;
+}
+
+function updateCorrectionCounter() {
+  if (correctionCounterStopped) return;
+
+  if (activeTask.correctionMode === "abX") {
+    if (!correctionCounterStarted) {
+      if (truck.x < activeTask.correctionStartX) {
+        correctionCounterStarted = true;
+      } else {
+        return;
+      }
+    }
+
+    if (isTruckCompletelyBelowY(activeTask.correctionStopY)) {
+      correctionCounterStopped = true;
+      return;
+    }
   }
 
-  updateTrailer();
+  const isReversingNow = truck.speed < -0.05;
+  const isDrivingForwardNow = truck.speed > 0.05;
 
-updateCorrectionCounter();
+  if (isReversingNow) {
+    hasReversedOnce = true;
+    wasReversing = true;
+  }
 
+  if (hasReversedOnce && wasReversing && isDrivingForwardNow) {
+    correctionMoves++;
+    wasReversing = false;
 
-const allPoints = [
-  ...getCorners(truck),
-  ...getCorners(trailer)
-];
+    if (correctionMoves > activeTask.maxCorrectionMoves) {
+      crash("ZU VIELE KORREKTURZÜGE!");
+    }
+  }
+}
 
+/* =========================================================
+   11 KOLLISION UND ERFOLG
+   ========================================================= */
 
-for (const p of allPoints) {
+function checkCrashAndSuccess() {
+  if (crashed) return;
 
-  if (p.x < 895) {
-    crashed = true;
-    crashReason = "BEREICH VERLASSEN!";
-
-    truck.speed = 0;
-    restartBtn.style.display = "block";
-    controls.style.display = "none";
+  if (checkWorldBounds()) {
+    crash("BEREICH VERLASSEN!");
     return;
   }
 
-  if (p.x > 2550) {
-    crashed = true;
-    crashReason = "KOLLISION";
-
-    truck.speed = 0;
-    restartBtn.style.display = "block";
-    controls.style.display = "none";
+  if (checkRoadMarkingViolation()) {
+    crash("MARKIERUNG ÜBERFAHREN!");
     return;
   }
 
-  if (
-    p.y < 700 ||
-    p.y > 2300
-  ) {
-    crashed = true;
-    crashReason = "BEREICH VERLASSEN!";
-
-    truck.speed = 0;
-    restartBtn.style.display = "block";
-    controls.style.display = "none";
+  if (checkRectangularCollisionZones()) {
+    crash("FAHRZEUG TOUCHIERT");
     return;
   }
 
-}
-
-if (checkRoundCollisionZones()) {
-
-  crashed = true;
-  crashReason = "KOLLISION";
-
-  truck.speed = 0;
-  restartBtn.style.display = "block";
-  controls.style.display = "none";
-
-  return;
-}
-
-if (checkCollisionZones()) {
-  crashed = true;
-
-  if (!crashReason) {
-    crashReason = "FAHRZEUG TOUCHIERT";
+  if (checkRoundCollisionZones()) {
+    crash("KOLLISION");
+    return;
   }
 
-  truck.speed = 0;
-  restartBtn.style.display = "block";
-  controls.style.display = "none";
-  return;
-}
-  const trailerRear = getTrailerRearCenter();
-
-  if (
-    trailerRear.x >= task20m.rampX &&
-    trailerRear.y >= task20m.rampTopY &&
-    trailerRear.y <= task20m.rampBottomY
-  ) {
-    crashed = true;
-    crashReason = "ANHÄNGER HAT RAMPE BERÜHRT";
-    truck.speed = 0;
-    restartBtn.style.display = "block";
-    controls.style.display = "none";
+  if (checkRampTouch()) {
+    crash("ANHÄNGER HAT RAMPE BERÜHRT");
     return;
   }
 
   if (checkTruckTrailerCollision()) {
-    crashed = true;
-    crashReason = "KOLLISION!";
-    truck.speed = 0;
-    restartBtn.style.display = "block";
-    controls.style.display = "none";
+    crash("KOLLISION!");
     return;
   }
 
-  steerDisplay.innerText = "Lenkrad: " + Math.round(wheelAngle) + "°";
+  if (checkTaskCompleted()) {
+    taskCompleted = true;
+    finishTime = Date.now();
+    truck.speed = 0;
+    restartBtn.style.display = "block";
+    controls.style.display = "none";
+  }
 }
 
-
-function localToWorld(obj, localX, localY) {
-  return {
-    x: obj.x + Math.cos(obj.angle) * localX - Math.sin(obj.angle) * localY,
-    y: obj.y + Math.sin(obj.angle) * localX + Math.cos(obj.angle) * localY
-  };
+function crash(reason) {
+  crashed = true;
+  crashReason = reason;
+  truck.speed = 0;
+  restartBtn.style.display = "block";
+  controls.style.display = "none";
 }
 
-function getTrailerRearCenter() {
-  return localToWorld(trailer, -trailer.length / 2, 0);
-}
-
-function getWheelTriggerPoints() {
-  const points = [];
-
-  // LKW Hinterachse
-  points.push(localToWorld(truck, -95, -truck.width / 2 - 3));
-  points.push(localToWorld(truck, -95,  truck.width / 2 + 3));
-
-  // LKW Vorderachse
-  points.push(localToWorld(truck, 130, -truck.width / 2 - 3));
-  points.push(localToWorld(truck, 130,  truck.width / 2 + 3));
-
-  // Anhänger Hinterachse
-  points.push(localToWorld(trailer, -90, -trailer.width / 3 - 10));
-  points.push(localToWorld(trailer, -90,  trailer.width / 3 + 10));
-
-  // Anhänger Vorderachse / Drehschemelachse
-  const frontAxleX = trailer.length / 2 - 25;
-  const axleCenter = localToWorld(trailer, frontAxleX, 0);
-
-  points.push({
-    x: axleCenter.x + Math.cos(trailer.drawbarAngle + Math.PI / 2) * (trailer.width / 3 + 10),
-    y: axleCenter.y + Math.sin(trailer.drawbarAngle + Math.PI / 2) * (trailer.width / 3 + 10)
-  });
-
-  points.push({
-    x: axleCenter.x + Math.cos(trailer.drawbarAngle - Math.PI / 2) * (trailer.width / 3 + 10),
-    y: axleCenter.y + Math.sin(trailer.drawbarAngle - Math.PI / 2) * (trailer.width / 3 + 10)
-  });
-
-  return points;
-}
-
-function drawWheelTriggerDebug() {
-  const points = getWheelTriggerPoints();
-
-  ctx.save();
+function checkWorldBounds() {
+  const points = [
+    ...getCorners(truck),
+    ...getCorners(trailer)
+  ];
 
   for (const p of points) {
-
-
-    const isViolation =
-      markingViolationPoint &&
-      Math.abs(p.x - markingViolationPoint.x) < 1 &&
-      Math.abs(p.y - markingViolationPoint.y) < 1;
-
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, isViolation ? 12 : 8, 0, Math.PI * 2);
-    ctx.fillStyle = isViolation ? "red" : "lime";
-    ctx.fill();
-
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 2;
-    ctx.stroke();
+    if (activeTask.worldLeft !== null && p.x < activeTask.worldLeft) return true;
+    if (activeTask.worldRight !== null && p.x > activeTask.worldRight) return true;
+    if (activeTask.worldTop !== null && p.y < activeTask.worldTop) return true;
+    if (activeTask.worldBottom !== null && p.y > activeTask.worldBottom) return true;
   }
 
-  ctx.restore();
+  return false;
 }
 
+function checkRectangularCollisionZones() {
+  const truckPoly = getCorners(truck);
+  const trailerPoly = getCorners(trailer);
 
-const markingLimits = {
-  topLimit: 975,
-  tolerance: 8,
+  for (const zone of activeTask.rectangularCollisionZones) {
+    const zonePoly = [
+      { x: zone.left, y: zone.top },
+      { x: zone.right, y: zone.top },
+      { x: zone.right, y: zone.bottom },
+      { x: zone.left, y: zone.bottom }
+    ];
 
-  leftTop:    { x: 1450, y: 1365 },
-  leftBottom: { x: 1700, y: 1615 },
+    if (polygonsCollide(truckPoly, zonePoly) || polygonsCollide(trailerPoly, zonePoly)) {
+      return true;
+    }
+  }
 
-  rightTop:    { x: 2285, y: 1365 },
-  rightBottom: { x: 2030, y: 1610 }
-};
-
-
-
-function bezierPoint(p0, p1, p2, t) {
-  const mt = 1 - t;
-
-  return {
-    x: mt * mt * p0.x + 2 * mt * t * p1.x + t * t * p2.x,
-    y: mt * mt * p0.y + 2 * mt * t * p1.y + t * t * p2.y
-  };
+  return false;
 }
 
-function buildLeftTriggerLine() {
+function checkRoundCollisionZones() {
+  const truckPoly = getCorners(truck);
+  const trailerPoly = getCorners(trailer);
+
+  for (const zone of activeTask.roundCollisionZones) {
+    if (circleIntersectsPolygon(zone, truckPoly) || circleIntersectsPolygon(zone, trailerPoly)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function checkRampTouch() {
+  if (activeTask.successType !== "rampe") return false;
+
+  const rear = getTrailerRearCenter();
+
+  return (
+    rear.x >= activeTask.rampX &&
+    rear.y >= activeTask.rampTopY &&
+    rear.y <= activeTask.rampBottomY
+  );
+}
+
+function checkTruckTrailerCollision() {
+  const truckPoly = getCorners(truck);
+  const trailerPoly = getCorners(trailer);
+  const drawbarPoly = getDrawbarPolygon();
+
+  const drawbarAngleToTruck = Math.abs(
+    normalizeAngle(trailer.drawbarAngle - truck.angle)
+  );
+
+  if (drawbarAngleToTruck > GLOBAL.drawbarMaxAngle) {
+    return true;
+  }
+
+  return (
+    polygonsCollide(truckPoly, trailerPoly) ||
+    polygonsCollide(truckPoly, drawbarPoly)
+  );
+}
+
+function checkTaskCompleted() {
+  if (activeTask.successType === "rampe") {
+    const rear = getTrailerRearCenter();
+    const distanceToRamp = activeTask.rampX - rear.x;
+
+    const trailerInRampHeight =
+      rear.y >= activeTask.rampTopY &&
+      rear.y <= activeTask.rampBottomY;
+
+    const correctDistance =
+      distanceToRamp >= activeTask.minStopDistance &&
+      distanceToRamp <= activeTask.maxStopDistance;
+
+    const almostStopped = Math.abs(truck.speed) < 0.2;
+
+    const trailerAngleNormalized =
+      Math.abs(normalizeAngle(trailer.angle - Math.PI));
+
+    const trailerNearlyParallelToRamp =
+      trailerAngleNormalized < activeTask.maxParallelAngle;
+
+    return (
+      trailerInRampHeight &&
+      correctDistance &&
+      almostStopped &&
+      trailerNearlyParallelToRamp
+    );
+  }
+
+  if (activeTask.successType === "umkehren") {
+    const angle =
+      ((truck.angle % (Math.PI * 2)) + Math.PI * 2) %
+      (Math.PI * 2);
+
+    const facingRight =
+      angle < activeTask.successAngleTolerance ||
+      angle > Math.PI * 2 - activeTask.successAngleTolerance;
+
+    const inTargetArea =
+      truck.x > activeTask.successX &&
+      truck.y > activeTask.successYMin &&
+      truck.y < activeTask.successYMax;
+
+    return (
+      truck.speed > activeTask.successMinSpeed &&
+      facingRight &&
+      inTargetArea
+    );
+  }
+
+  return false;
+}
+
+/* =========================================================
+   12 MARKIERUNGEN UND GRENZLINIEN
+   ========================================================= */
+
+function checkRoadMarkingViolation() {
+  if (!activeTask.roadMarking) return false;
+
+  const marking = activeTask.roadMarking;
+  const wheelPoints = getWheelTriggerPoints();
+
+  const leftLine = buildTriggerLine(marking.leftTop, marking.leftBottom);
+  const rightLine = buildTriggerLine(marking.rightTop, marking.rightBottom);
+
+  for (const p of wheelPoints) {
+    if (p.y < marking.topLimitY) {
+      return true;
+    }
+
+    const leftX = getBoundaryXAtY(leftLine, p.y);
+    const rightX = getBoundaryXAtY(rightLine, p.y);
+    const tireHalfWidth = 10;
+
+    if (leftX !== null && p.x < leftX + tireHalfWidth - marking.tolerance) {
+      return true;
+    }
+
+    if (rightX !== null && p.x > rightX - tireHalfWidth + marking.tolerance) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function buildTriggerLine(topPoint, bottomPoint) {
   const points = [];
-  const { leftTop, leftBottom } = markingLimits;
-
   const control = {
-    x: leftBottom.x,
-    y: leftTop.y
+    x: bottomPoint.x,
+    y: topPoint.y
   };
 
   for (let i = 0; i <= 80; i++) {
     const t = i / 80;
-    points.push(bezierPoint(leftTop, control, leftBottom, t));
+    const mt = 1 - t;
+
+    points.push({
+      x: mt * mt * topPoint.x + 2 * mt * t * control.x + t * t * bottomPoint.x,
+      y: mt * mt * topPoint.y + 2 * mt * t * control.y + t * t * bottomPoint.y
+    });
   }
 
-  for (let y = leftBottom.y + 5; y <= world.height; y += 5) {
+  for (let y = bottomPoint.y + 5; y <= GLOBAL.worldHeight; y += 5) {
     points.push({
-      x: leftBottom.x,
+      x: bottomPoint.x,
       y: y
     });
   }
 
   return points;
-}
-
-function buildRightTriggerLine() {
-  const points = [];
-  const { rightTop, rightBottom } = markingLimits;
-
-  const control = {
-    x: rightBottom.x,
-    y: rightTop.y
-  };
-
-  for (let i = 0; i <= 80; i++) {
-    const t = i / 80;
-    points.push(bezierPoint(rightTop, control, rightBottom, t));
-  }
-
-  for (let y = rightBottom.y + 5; y <= world.height; y += 5) {
-    points.push({
-      x: rightBottom.x,
-      y: y
-    });
-  }
-
-  return points;
-}
-
-function drawPolyline(points, color, width) {
-  if (!points.length) return;
-
-  ctx.save();
-  ctx.strokeStyle = color;
-  ctx.lineWidth = width;
-  ctx.beginPath();
-  ctx.moveTo(points[0].x, points[0].y);
-
-  for (let i = 1; i < points.length; i++) {
-    ctx.lineTo(points[i].x, points[i].y);
-  }
-
-  ctx.stroke();
-  ctx.restore();
-}
-
-function drawRoadTriggerDebug() {
-  const leftLine = buildLeftTriggerLine();
-  const rightLine = buildRightTriggerLine();
-
-  drawPolyline(leftLine, "white", 4);
-  drawPolyline(rightLine, "white", 4);
 }
 
 function getBoundaryXAtY(linePoints, y) {
@@ -1921,73 +1690,176 @@ function getBoundaryXAtY(linePoints, y) {
   return null;
 }
 
+/* =========================================================
+   13 GEOMETRIE-HILFSFUNKTIONEN
+   ========================================================= */
 
+function getHitchPoint() {
+  return {
+    x: truck.x - Math.cos(truck.angle) * truck.length / 2,
+    y: truck.y - Math.sin(truck.angle) * truck.length / 2
+  };
+}
 
-function checkRoadMarkingViolation() {
-  const wheelPoints = getWheelTriggerPoints();
+function localToWorld(obj, localX, localY) {
+  return {
+    x: obj.x + Math.cos(obj.angle) * localX - Math.sin(obj.angle) * localY,
+    y: obj.y + Math.sin(obj.angle) * localX + Math.cos(obj.angle) * localY
+  };
+}
 
-  const leftLine = buildLeftTriggerLine();
-  const rightLine = buildRightTriggerLine();
+function getTrailerRearCenter() {
+  return localToWorld(trailer, -trailer.length / 2, 0);
+}
 
-  markingViolationPoint = null;
+function getCorners(obj) {
+  const c = Math.cos(obj.angle);
+  const s = Math.sin(obj.angle);
 
-  for (const p of wheelPoints) {
-    if (p.y < markingLimits.topLimit) {
-      markingViolationPoint = p;
+  const halfLength = obj.length / 2;
+  const halfWidth = obj.width / 2;
+
+  return [
+    { x: obj.x + c * halfLength - s * halfWidth, y: obj.y + s * halfLength + c * halfWidth },
+    { x: obj.x + c * halfLength + s * halfWidth, y: obj.y + s * halfLength - c * halfWidth },
+    { x: obj.x - c * halfLength + s * halfWidth, y: obj.y - s * halfLength - c * halfWidth },
+    { x: obj.x - c * halfLength - s * halfWidth, y: obj.y - s * halfLength + c * halfWidth }
+  ];
+}
+
+function getDrawbarPolygon() {
+  const hitchPoint = getHitchPoint();
+
+  const axleX = trailer.frontAxleX ?? trailer.x + Math.cos(trailer.angle) * (trailer.length / 2 - 25);
+  const axleY = trailer.frontAxleY ?? trailer.y + Math.sin(trailer.angle) * (trailer.length / 2 - 25);
+
+  const width = GLOBAL.drawbarCollisionWidth;
+
+  const startX =
+    hitchPoint.x - Math.cos(trailer.drawbarAngle) * GLOBAL.drawbarCollisionOffset;
+
+  const startY =
+    hitchPoint.y - Math.sin(trailer.drawbarAngle) * GLOBAL.drawbarCollisionOffset;
+
+  return [
+    {
+      x: startX + Math.cos(trailer.drawbarAngle + Math.PI / 2) * width,
+      y: startY + Math.sin(trailer.drawbarAngle + Math.PI / 2) * width
+    },
+    {
+      x: startX + Math.cos(trailer.drawbarAngle - Math.PI / 2) * width,
+      y: startY + Math.sin(trailer.drawbarAngle - Math.PI / 2) * width
+    },
+    {
+      x: axleX + Math.cos(trailer.drawbarAngle - Math.PI / 2) * width,
+      y: axleY + Math.sin(trailer.drawbarAngle - Math.PI / 2) * width
+    },
+    {
+      x: axleX + Math.cos(trailer.drawbarAngle + Math.PI / 2) * width,
+      y: axleY + Math.sin(trailer.drawbarAngle + Math.PI / 2) * width
+    }
+  ];
+}
+
+function getWheelTriggerPoints() {
+  const points = [];
+
+  points.push(localToWorld(truck, -95, -truck.width / 3 - 2));
+  points.push(localToWorld(truck, -95,  truck.width / 3 + 2));
+
+  points.push(localToWorld(truck, 130, -truck.width / 3 - 2));
+  points.push(localToWorld(truck, 130,  truck.width / 3 + 2));
+
+  points.push(localToWorld(trailer, -90, -trailer.width / 3 - 10));
+  points.push(localToWorld(trailer, -90,  trailer.width / 3 + 10));
+
+  const frontAxleX = trailer.length / 2 - 25;
+  const axleCenter = localToWorld(trailer, frontAxleX, 0);
+
+  points.push({
+    x: axleCenter.x + Math.cos(trailer.drawbarAngle + Math.PI / 2) * (trailer.width / 3 + 10),
+    y: axleCenter.y + Math.sin(trailer.drawbarAngle + Math.PI / 2) * (trailer.width / 3 + 10)
+  });
+
+  points.push({
+    x: axleCenter.x + Math.cos(trailer.drawbarAngle - Math.PI / 2) * (trailer.width / 3 + 10),
+    y: axleCenter.y + Math.sin(trailer.drawbarAngle - Math.PI / 2) * (trailer.width / 3 + 10)
+  });
+
+  return points;
+}
+
+function isTruckCompletelyBelowY(limitY) {
+  const points = getCorners(truck);
+  return points.every(p => p.y > limitY);
+}
+
+/* =========================================================
+   14 POLYGON-KOLLISION
+   ========================================================= */
+
+function polygonsCollide(polyA, polyB) {
+  const polygons = [polyA, polyB];
+
+  for (const poly of polygons) {
+    for (let i = 0; i < poly.length; i++) {
+      const p1 = poly[i];
+      const p2 = poly[(i + 1) % poly.length];
+
+      const edge = {
+        x: p2.x - p1.x,
+        y: p2.y - p1.y
+      };
+
+      const axis = {
+        x: -edge.y,
+        y: edge.x
+      };
+
+      const length = Math.hypot(axis.x, axis.y);
+      axis.x /= length;
+      axis.y /= length;
+
+      const projectionA = projectPolygon(axis, polyA);
+      const projectionB = projectPolygon(axis, polyB);
+
+      if (projectionA.max < projectionB.min || projectionB.max < projectionA.min) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+function projectPolygon(axis, points) {
+  let min = points[0].x * axis.x + points[0].y * axis.y;
+  let max = min;
+
+  for (const p of points) {
+    const value = p.x * axis.x + p.y * axis.y;
+    min = Math.min(min, value);
+    max = Math.max(max, value);
+  }
+
+  return { min, max };
+}
+
+function circleIntersectsPolygon(circle, polygon) {
+  if (pointInPolygon({ x: circle.x, y: circle.y }, polygon)) {
+    return true;
+  }
+
+  for (let i = 0; i < polygon.length; i++) {
+    const a = polygon[i];
+    const b = polygon[(i + 1) % polygon.length];
+
+    if (distancePointToSegment(circle.x, circle.y, a.x, a.y, b.x, b.y) <= circle.radius) {
       return true;
     }
-
-    const leftX = getBoundaryXAtY(leftLine, p.y);
-    const rightX = getBoundaryXAtY(rightLine, p.y);
-
-    const tireHalfWidth = 10;
-
-// Spielfeldgrenzen links/rechts
-if (p.x < 950) {
-  markingViolationPoint = p;
-  crashReason = "BEREICH VERLASSEN!";
-  return true;
-}
-
-if (p.x > 3500) {
-  markingViolationPoint = p;
-  crashReason = "BEREICH VERLASSEN!";
-  return true;
-}
-
-if (leftX !== null && p.x < leftX + tireHalfWidth - markingLimits.tolerance) {
-  markingViolationPoint = p;
-  return true;
-}
-
-if (rightX !== null && p.x > rightX - tireHalfWidth + markingLimits.tolerance) {
-  markingViolationPoint = p;
-  return true;
-}
   }
 
   return false;
-}
-
-function distancePointToSegment(px, py, ax, ay, bx, by) {
-  const abx = bx - ax;
-  const aby = by - ay;
-  const apx = px - ax;
-  const apy = py - ay;
-
-  const abLengthSq = abx * abx + aby * aby;
-
-  let t = 0;
-
-  if (abLengthSq > 0) {
-    t = (apx * abx + apy * aby) / abLengthSq;
-    t = Math.max(0, Math.min(1, t));
-  }
-
-  const closestX = ax + abx * t;
-  const closestY = ay + aby * t;
-
-  return Math.hypot(px - closestX, py - closestY);
 }
 
 function pointInPolygon(point, polygon) {
@@ -2009,1101 +1881,44 @@ function pointInPolygon(point, polygon) {
   return inside;
 }
 
-function circleIntersectsPolygon(circle, polygon) {
-  if (pointInPolygon({ x: circle.x, y: circle.y }, polygon)) {
-    return true;
+function distancePointToSegment(px, py, ax, ay, bx, by) {
+  const abx = bx - ax;
+  const aby = by - ay;
+  const apx = px - ax;
+  const apy = py - ay;
+  const abLengthSq = abx * abx + aby * aby;
+
+  let t = 0;
+
+  if (abLengthSq > 0) {
+    t = (apx * abx + apy * aby) / abLengthSq;
+    t = clamp(t, 0, 1);
   }
 
-  for (let i = 0; i < polygon.length; i++) {
-    const a = polygon[i];
-    const b = polygon[(i + 1) % polygon.length];
+  const closestX = ax + abx * t;
+  const closestY = ay + aby * t;
 
-    if (
-      distancePointToSegment(
-        circle.x,
-        circle.y,
-        a.x,
-        a.y,
-        b.x,
-        b.y
-      ) <= circle.radius
-    ) {
-      return true;
-    }
-  }
-
-  return false;
+  return Math.hypot(px - closestX, py - closestY);
 }
 
-function checkCollisionZones() {
-  const truckPoly = getCorners(truck);
-  const trailerPoly = getCorners(trailer);
-
-  for (const zone of collisionZones) {
-    const zonePoly = [
-      { x: zone.left,  y: zone.top },
-      { x: zone.right, y: zone.top },
-      { x: zone.right, y: zone.bottom },
-      { x: zone.left,  y: zone.bottom }
-    ];
-
-    if (
-      polygonsCollide(truckPoly, zonePoly) ||
-      polygonsCollide(trailerPoly, zonePoly)
-    ) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-function checkRoundCollisionZones() {
-  const truckPoly = getCorners(truck);
-  const trailerPoly = getCorners(trailer);
-
-  for (const zone of roundCollisionZones) {
-    if (
-      circleIntersectsPolygon(zone, truckPoly) ||
-      circleIntersectsPolygon(zone, trailerPoly)
-    ) {
-      return true;
-    }
-  }
-
-  return false;
-}
-function updateTrailer() {
-  const hitchX =
-    truck.x - Math.cos(truck.angle) * truck.length / 2;
-
-  const hitchY =
-    truck.y - Math.sin(truck.angle) * truck.length / 2;
-
-  const frontAxleOffset = trailer.length / 2 - 25;
-
-  // aktueller Drehschemelpunkt am Anhänger
-  const currentFrontX =
-    trailer.x + Math.cos(trailer.angle) * frontAxleOffset;
-
-  const currentFrontY =
-    trailer.y + Math.sin(trailer.angle) * frontAxleOffset;
-
-  // Richtung vom Drehschemel zur Kupplung
-  const dx = hitchX - currentFrontX;
-  const dy = hitchY - currentFrontY;
-
-  trailer.drawbarAngle = Math.atan2(dy, dx);
-
-  // neuer Drehschemelpunkt mit fester Deichsellänge
-  const newFrontAxleX =
-    hitchX - Math.cos(trailer.drawbarAngle) * trailer.drawbarLength;
-
-  const newFrontAxleY =
-    hitchY - Math.sin(trailer.drawbarAngle) * trailer.drawbarLength;
-
-  // Anhänger richtet sich direkt auf den neuen Drehschemelpunkt aus
-  trailer.angle = Math.atan2(
-    newFrontAxleY - trailer.y,
-    newFrontAxleX - trailer.x
-  );
-
-  // Anhängerposition vom Drehschemelpunkt zurückrechnen
-  trailer.x =
-    newFrontAxleX - Math.cos(trailer.angle) * frontAxleOffset;
-
-  trailer.y =
-    newFrontAxleY - Math.sin(trailer.angle) * frontAxleOffset;
-
-  trailer.frontAxleX = newFrontAxleX;
-  trailer.frontAxleY = newFrontAxleY;
-
-  trailer.rearAxleX =
-    trailer.x + Math.cos(trailer.angle) * -80;
-
-  trailer.rearAxleY =
-    trailer.y + Math.sin(trailer.angle) * -80;
-}
-function getCorners(obj) {
-  const c = Math.cos(obj.angle);
-  const s = Math.sin(obj.angle);
-
-  let hl = obj.length / 2;
-  let hw = obj.width / 2;
-
-  // LKW-Kollisionsbox enger machen
-  // Spiegel / leere Sprite-Ränder werden ignoriert
-  if (obj === truck) {
-    hw -= 12; // links/rechts je 12 px kleiner
-
-
-  }
-
-  return [
-    { x: obj.x + c * hl - s * hw, y: obj.y + s * hl + c * hw },
-    { x: obj.x + c * hl + s * hw, y: obj.y + s * hl - c * hw },
-    { x: obj.x - c * hl + s * hw, y: obj.y - s * hl - c * hw },
-    { x: obj.x - c * hl - s * hw, y: obj.y - s * hl + c * hw }
-  ];
-}
-function project(axis, points) {
-  let min = points[0].x * axis.x + points[0].y * axis.y;
-  let max = min;
-
-  for (const p of points) {
-    const val = p.x * axis.x + p.y * axis.y;
-    min = Math.min(min, val);
-    max = Math.max(max, val);
-  }
-
-  return { min, max };
-}
-
-function polygonsCollide(a, b) {
-  const polygons = [a, b];
-
-  for (const poly of polygons) {
-    for (let i = 0; i < poly.length; i++) {
-      const p1 = poly[i];
-      const p2 = poly[(i + 1) % poly.length];
-
-      const edge = { x: p2.x - p1.x, y: p2.y - p1.y };
-      const axis = { x: -edge.y, y: edge.x };
-
-      const len = Math.hypot(axis.x, axis.y);
-      axis.x /= len;
-      axis.y /= len;
-
-      const pa = project(axis, a);
-      const pb = project(axis, b);
-
-      if (pa.max < pb.min || pb.max < pa.min) {
-        return false;
-      }
-    }
-  }
-
-  return true;
-}
-function getDrawbarPolygon() {
-  const hitchX = truck.x - Math.cos(truck.angle) * truck.length / 2;
-  const hitchY = truck.y - Math.sin(truck.angle) * truck.length / 2;
-
-const axleX = trailer.frontAxleX ?? trailer.x + Math.cos(trailer.angle) * (trailer.length / 2 - 25);
-const axleY = trailer.frontAxleY ?? trailer.y + Math.sin(trailer.angle) * (trailer.length / 2 - 25);
-
-  const width = 14;
-
-  // Start etwas hinter der Kupplung, damit die normale Verbindung nicht sofort Kollision auslöst
-  const startX = hitchX - Math.cos(trailer.drawbarAngle) * 42;
-  const startY = hitchY - Math.sin(trailer.drawbarAngle) * 42;
-
-  return [
-    {
-      x: startX + Math.cos(trailer.drawbarAngle + Math.PI / 2) * width,
-      y: startY + Math.sin(trailer.drawbarAngle + Math.PI / 2) * width
-    },
-    {
-      x: startX + Math.cos(trailer.drawbarAngle - Math.PI / 2) * width,
-      y: startY + Math.sin(trailer.drawbarAngle - Math.PI / 2) * width
-    },
-    {
-      x: axleX + Math.cos(trailer.drawbarAngle - Math.PI / 2) * width,
-      y: axleY + Math.sin(trailer.drawbarAngle - Math.PI / 2) * width
-    },
-    {
-      x: axleX + Math.cos(trailer.drawbarAngle + Math.PI / 2) * width,
-      y: axleY + Math.sin(trailer.drawbarAngle + Math.PI / 2) * width
-    }
-  ];
-}
-function checkTruckTrailerCollision() {
-
-  const truckPoly = getCorners(truck);
-const allPoints = [
-  ...truckPoly,
-  ...getCorners(trailer)
-];
-
-for (const p of allPoints) {
-
-}
-  const trailerPoly = getCorners(trailer);
-  const drawbarPoly = getDrawbarPolygon();
-
-  return (
-    polygonsCollide(truckPoly, trailerPoly) ||
-    polygonsCollide(truckPoly, drawbarPoly)
-  );
-}
-
-function checkTaskCompleted() {
-  if (taskCompleted) return false;
-
-  const trailerRear = getTrailerRearCenter();
-
-  const distanceToRamp = task20m.rampX - trailerRear.x;
-
-  const trailerInRampHeight =
-    trailerRear.y >= task20m.rampTopY &&
-    trailerRear.y <= task20m.rampBottomY;
-
-  const correctDistance =
-    distanceToRamp >= task20m.minStopDistance &&
-    distanceToRamp <= task20m.maxStopDistance;
-
-  const almostStopped = Math.abs(truck.speed) < 0.2;
-
-  const trailerAngleNormalized =
-    Math.abs(normalizeAngle(trailer.angle - Math.PI));
-
-  const trailerNearlyParallelToRamp =
-    trailerAngleNormalized < 0.08;
-
-  return (
-    trailerInRampHeight &&
-    correctDistance &&
-    almostStopped &&
-    trailerNearlyParallelToRamp
-  );
-}
-function drawFallbackRoad() {
-  ctx.fillStyle = "#3f7f35";
-  ctx.fillRect(0, 0, world.width, world.height);
-
-  ctx.fillStyle = "#666";
-  ctx.fillRect(3500, 2800, 2500, 350);
-  ctx.fillRect(4200, 1800, 500, 1500);
-}
-function drawRoad() {
-  if (envLoaded) {
-    ctx.drawImage(envImage, 0, 0, world.width, world.height);
-  } else {
-    drawFallbackRoad();
-  }
-}
-function drawWheel(x, y, angle) {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate(angle);
-  ctx.fillStyle = "black";
-  ctx.fillRect(-13, -5, 26, 10);
-  ctx.restore();
-}
-
-function drawFallbackVehicle(obj, color) {
-  ctx.save();
-  ctx.translate(obj.x, obj.y);
-  ctx.rotate(obj.angle);
-  ctx.fillStyle = color;
-  ctx.fillRect(-obj.length / 2, -obj.width / 2, obj.length, obj.width);
-  ctx.strokeStyle = "black";
-  ctx.lineWidth = 2;
-  ctx.strokeRect(-obj.length / 2, -obj.width / 2, obj.length, obj.width);
-  ctx.restore();
-}
-
-
-function drawSpriteImage(obj, imageCanvas) {
-  ctx.save();
-  ctx.translate(obj.x, obj.y);
-
-  // Deine Fahrzeugbilder zeigen nach rechts.
-  // Die Fahrphysik arbeitet ebenfalls nach rechts bei Winkel 0.
-ctx.rotate(obj.angle + Math.PI);
-
-ctx.drawImage(
-    imageCanvas,
-    -obj.length / 2,
-    -obj.width / 2,
-    obj.length,
-    obj.width
-);
-
-  ctx.restore();
-}
-
-function drawTruck() {
-  if (truckSpriteLoaded) {
-    drawSpriteImage(truck, truckSpriteCanvas);
-  } else {
-    drawFallbackVehicle(truck, "white");
-  }
-
-ctx.save();
-ctx.translate(truck.x, truck.y);
-ctx.rotate(truck.angle);
-
-  drawWheel(-95, -truck.width / 3 - 10, 0);
-  drawWheel(-95, truck.width / 3 + 10, 0);
-  drawWheel(-95, -truck.width / 5 - 10, 0);
-  drawWheel(-95, truck.width / 5 + 10, 0);
-
-
-  drawWheel(130, -truck.width / 3 - 6, truck.steeringAngle);
-  drawWheel (130, truck.width / 3 + 6, truck.steeringAngle);
-
-  ctx.restore();
-}
-
-function drawTrailer() {
- if (trailerSpriteLoaded) {
-  ctx.save();
-  ctx.translate(trailer.x, trailer.y);
-  ctx.rotate(trailer.angle + Math.PI);
-
-  ctx.drawImage(
-    trailerSpriteCanvas,
-    -trailer.length / 2,
-    -trailer.width / 2,
-    trailer.length,
-    trailer.width
-  );
-
-  ctx.restore();
-} else {
-  drawFallbackVehicle(trailer, "green");
-}
-  ctx.save();
-  ctx.translate(trailer.x, trailer.y);
-  ctx.rotate(trailer.angle);
-
-  drawWheel(-90, -trailer.width / 3 - 10, 0);
-  drawWheel(-90, trailer.width / 3 + 10, 0);
-
-  const frontAxleX = trailer.length / 2 - 25;
-  const axleAngle = trailer.drawbarAngle - trailer.angle;
-
-  ctx.save();
-  ctx.translate(frontAxleX, 0);
-  ctx.rotate(axleAngle);
-
-  ctx.strokeStyle = "black";
-  ctx.lineWidth = 5;
-  ctx.beginPath();
-  ctx.moveTo(0, -trailer.width / 2);
-  ctx.lineTo(0, trailer.width / 2);
-  ctx.stroke();
-
-  drawWheel(0, -trailer.width / 3 - 10, 0);
-  drawWheel(0, trailer.width / 3 + 10, 0);
-
-  ctx.restore();
-  ctx.restore();
-}
-
-
-
-function drawDrawbar() {
-  const hitchX = truck.x - Math.cos(truck.angle) * truck.length / 2;
-  const hitchY = truck.y - Math.sin(truck.angle) * truck.length / 2;
-
-const axleX = trailer.frontAxleX ?? trailer.x + Math.cos(trailer.angle) * (trailer.length / 2 - 25);
-const axleY = trailer.frontAxleY ?? trailer.y + Math.sin(trailer.angle) * (trailer.length / 2 - 25);
-
-const pivotRadius = 19;
-
-const leftX = axleX + Math.cos(trailer.drawbarAngle + Math.PI / 2) * pivotRadius;
-const leftY = axleY + Math.sin(trailer.drawbarAngle + Math.PI / 2) * pivotRadius;
-
-const rightX = axleX + Math.cos(trailer.drawbarAngle - Math.PI / 2) * pivotRadius;
-const rightY = axleY + Math.sin(trailer.drawbarAngle - Math.PI / 2) * pivotRadius;
-
-  ctx.beginPath();
-  ctx.moveTo(hitchX, hitchY);
-  ctx.lineTo(leftX, leftY);
-  ctx.lineTo(rightX, rightY);
-  ctx.closePath();
-
-
-  ctx.strokeStyle = "black";
-  ctx.lineWidth = 4;
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.arc(hitchX, hitchY, 5, 0, Math.PI * 2);
-  ctx.fillStyle = "black";
-  ctx.fill();
-
-ctx.beginPath();
-ctx.arc(axleX, axleY, 19, 0, Math.PI * 2);
-
-ctx.strokeStyle = "black";
-ctx.lineWidth = 4;
-ctx.stroke();
-}
-
-function drawCollisionDebug() {
-  ctx.save();
-
-  ctx.strokeStyle = "red";
-  ctx.lineWidth = 3;
-
-  for (const zone of collisionZones) {
-    ctx.strokeRect(
-      zone.left,
-      zone.top,
-      zone.right - zone.left,
-      zone.bottom - zone.top
-    );
-  }
-
-  ctx.strokeStyle = "yellow";
-
-  for (const zone of roundCollisionZones) {
-    ctx.beginPath();
-    ctx.arc(zone.x, zone.y, zone.radius, 0, Math.PI * 2);
-    ctx.stroke();
-  }
-
-  ctx.restore();
-}
-
-
-function drawHud() {
-  if (correctionBox) {
-    correctionBox.innerText =
-      "Korrekturzüge: " + correctionMoves + " / 4";
-  }
-}
-
-function drawCollisionOverlay() {
-  ctx.fillStyle = "rgba(0,0,0,0.75)";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  ctx.textAlign = "center";
-
-  const isPortrait = canvas.height > canvas.width;
-
-  ctx.fillStyle = "red";
-  ctx.font = isPortrait ? "28px Arial" : "52px Arial";
-
-  const title =
-    crashReason === "ANHÄNGER HAT RAMPE BERÜHRT" ||
-    crashReason === "FAHRZEUG TOUCHIERT"
-      ? "KOLLISION"
-      : crashReason;
-
-  ctx.fillText(
-    title,
-    canvas.width / 2,
-    canvas.height / 2 - 80
-  );
-
-  ctx.fillStyle = "white";
-  ctx.font = isPortrait ? "22px Arial" : "30px Arial";
-
-  if (crashReason === "MARKIERUNG ÜBERFAHREN!") {
-
-    ctx.fillText("Du hast die Begrenzung", canvas.width / 2, canvas.height / 2 - 20);
-    ctx.fillText("der Aufgabe überfahren", canvas.width / 2, canvas.height / 2 + 20);
-
-  }
-  else if (crashReason === "BEREICH VERLASSEN!") {
-
-    ctx.fillText("Du hast den zulässigen", canvas.width / 2, canvas.height / 2 - 20);
-    ctx.fillText("Aufgabenbereich verlassen", canvas.width / 2, canvas.height / 2 + 20);
-
-  }
-  else if (crashReason === "ZU VIELE KORREKTURZÜGE!") {
-
-    ctx.fillText("Es sind maximal", canvas.width / 2, canvas.height / 2 - 20);
-    ctx.fillText("4 Korrekturzüge erlaubt", canvas.width / 2, canvas.height / 2 + 20);
-
-  }
-  else if (crashReason === "FAHRZEUG TOUCHIERT") {
-
-    ctx.fillText("Fahrzeug", canvas.width / 2, canvas.height / 2 - 20);
-    ctx.fillText("touchiert", canvas.width / 2, canvas.height / 2 + 20);
-
-  }
-else if (crashReason === "KOLLISION") {
-
-  ctx.fillText(
-    "Fahre vorsichtig",
-    canvas.width / 2,
-    canvas.height / 2
-  );
-
-}
-
-  else if (crashReason === "ANHÄNGER HAT RAMPE BERÜHRT") {
-
-    ctx.fillText("Anhänger hat", canvas.width / 2, canvas.height / 2 - 20);
-    ctx.fillText("Rampe berührt", canvas.width / 2, canvas.height / 2 + 20);
-
-  }
-  else {
-
-    ctx.fillText("LKW hat den", canvas.width / 2, canvas.height / 2 - 20);
-    ctx.fillText("Anhänger berührt", canvas.width / 2, canvas.height / 2 + 20);
-
-  }
-
-
-  ctx.textAlign = "left";
-}
-
-function formatTime(ms) {
-  const totalSeconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-
-  return (
-    String(minutes).padStart(2, "0") +
-    ":" +
-    String(seconds).padStart(2, "0")
-  );
-}
-
-
-function drawSuccessOverlay() {
-
-  ctx.fillStyle = "rgba(0,0,0,0.55)";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  const isPortrait = canvas.height > canvas.width;
-
-  ctx.textAlign = "center";
-
-  ctx.fillStyle = "#00ff44";
-
-  ctx.font = isPortrait ? "28px Arial" : "52px Arial";
-
-  ctx.fillText(
-    "GRUNDFAHRAUFGABE",
-    canvas.width / 2,
-    canvas.height / 2 - 60
-  );
-
-  ctx.fillText(
-    "ABGESCHLOSSEN",
-    canvas.width / 2,
-    canvas.height / 2
-  );
-
-  ctx.fillStyle = "white";
-
-  ctx.font = isPortrait ? "18px Arial" : "28px Arial";
-
-  ctx.fillText(
-    "Gratulation",
-    canvas.width / 2,
-    canvas.height / 2 + 50
-  );
-const usedTime = finishTime
-  ? formatTime(finishTime - startTime)
-  : "00:00";
-
-ctx.fillText(
-  "Zeit: " + usedTime,
-  canvas.width / 2,
-  canvas.height / 2 + 95
-);
-  ctx.textAlign = "left";
-}
-function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-updateIntro();
-if (followTruck && !introActive) {
-  camera.x =
-    truck.x - Math.cos(truck.angle) * truck.length / 2;
-
-  camera.y =
-    truck.y - Math.sin(truck.angle) * truck.length / 2 + 60;
-}
-
-  ctx.save();
-
-  ctx.translate(canvas.width / 2, canvas.height / 2);
-  ctx.scale(camera.zoom, camera.zoom);
-  ctx.translate(-camera.x, -camera.y);
-
-drawRoad();
-if (introActive) {
-  ctx.save();
-
-  ctx.strokeStyle = "red";
-  ctx.lineWidth = 10;
-
-  ctx.beginPath();
-  ctx.moveTo(2550, 1808);
-  ctx.lineTo(2550, 2007);
-  ctx.stroke();
-
-  ctx.restore();
-}
-
-
-drawTrailer();
-
-drawDrawbar();
-
-drawTruck();
-ctx.restore();
-
-  drawHud();
-
-if (crashed) {
-  drawCollisionOverlay();
-}
-
-if (taskCompleted) {
-  drawSuccessOverlay();
-}
-}
-
-function loop() {
-  update();
-  draw();
-  requestAnimationFrame(loop);
-}
-
-loop();
-</script>
-
-</body>
-
-
-</html>
-  </template>
-
-  <template id="tpl-umkehren">
-<!DOCTYPE html>
-<html lang="de">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>CE Simulator Umkehren</title>
-
-
-<style>
-
-#watermark {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-
-  z-index: 99999;
-
-  color: rgba(255, 255, 255, 0.04);
-  font-size: 24px;
-  font-weight: bold;
-
-  pointer-events: none;
-}
-
-
-html, body {
-  margin: 0;
-  padding: 0;
-  background: #000;
-  color: white;
-  font-family: Arial, sans-serif;
-  text-align: center;
-  overflow: hidden;
-  touch-action: none;
-}
-
-h2 {
-  margin: 8px 0 4px 0;
-  font-size: 18px;
-}
-
-p {
-  margin: 2px 0 8px 0;
-  font-size: 12px;
-}
-
-#coordBox {
-  position: fixed;
-  top: 45px;
-  right: 10px;
-  z-index: 99999;
-
-  background: rgba(0,0,0,0.75);
-  color: yellow;
-
-  padding: 5px 9px;
-  border-radius: 6px;
-
-  font-size: 14px;
-  font-family: monospace;
-  font-weight: bold;
-
-  pointer-events: none;
-}
-
-canvas {
-  background: #2b2b2b;
-  display: block;
-  margin: 0 auto;
-  border: none;
-  width: 100vw;
-  height: 62vh;
-  object-fit: cover;
-}
-.controls {
-transform: translateY(-80px);
-  position: fixed;
-  left: 0;
-  bottom: 0;
-  width: 100vw;
-  height: 10vh;
-
-  background: rgba(0,0,0,0.35);
-
-
-
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-}
-
-
-button {
-  font-size: 18px;
-  padding: 12px 18px;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  touch-action: none;
-}
-
-
-.gearPanel {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-}
-
-.gearPanel button {
-  width: 52px;
-  height: 42px;
-  font-weight: bold;
-  background: #333;
-  color: white;
-  border: 2px solid #777;
-}
-
-.gearPanel button.activeGear {
-  background: #0066ff;
-  border-color: white;
-}
-.pedal {
-  width: 90px;
-  height: 65px;
-  color: white;
-  font-weight: bold;
-  font-size: 15px;
-}
-
-.pedal {
-  background: transparent;
-  border: none;
-  padding: 0;
-}
-
-.pedal img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  pointer-events: none;
-}
-
-
-
-
-.steerButtons {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  flex-wrap: nowrap;
-}
-
-#steerDisplay {
-  font-size: 14px;
-  margin-bottom: 10px;
-}
-
-.pedalRow {
-  display: flex;
-  gap: 3px;
-}
-
-#steeringWheel {
-  width: 130px;
-  height: 130px;
-  margin: 6px auto;
-  touch-action: none;
-}
-
-#steeringWheelImg {
-  width: 100%;
-  height: 100%;
-  user-select: none;
-  -webkit-user-drag: none;
-  pointer-events: none;
-}
-
-@media screen and (max-width: 1100px) and (orientation: portrait) {
-  h2 {
-    font-size: 16px;
-    margin: 3px 0 1px 0;
-  }
-
-  p {
-    font-size: 11px;
-    margin: 1px 0 3px 0;
-  }
-
-  canvas {
-    height: 100vh;
-  }
-
-
-.controls {
-  height: 34vh;
-
-  background: rgba(80,80,80,0.35) !important;
-  display: grid;
-
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto auto;
-
-  gap: 6px;
-
-  padding: 6px;
-}
-
-
-
-.steeringPanel {
-  grid-column: 1;
-  grid-row: 1;
- display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-
-}
-
-.gearPanel {
-  grid-column: 1;
-  grid-row: 2;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-}
-
-.pedalRow {
-  grid-column: 2;
-  grid-row: 2;
-
-  display: flex;
-  justify-content: center;
-  gap: 3px;
-}
-
-.speedPanel {
-  grid-column: 2;
-  grid-row: 1;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-
-  margin-top: -15px;
-}
-
-
-  #restartBtn {
-    top: 87% !important;
-    font-size: 20px !important;
-    padding: 14px 28px !important;
-  }
-}
-
-@media (orientation: landscape) {
-  h2 {
-    font-size: 24px;
-  }
-
-  p {
-    font-size: 16px;
-  }
-
-  canvas {
-    height: 75vh;
-  }
-
-  .controls {
-transform: translateY(-75px);
-    height: 25vh;
-    display: grid;
-    grid-template-columns: 1fr 0.7fr 1fr 1fr;
-    align-items: center;
-    gap: 2px;
-    padding: 2px;
-.controls {
-  box-shadow: 0 100px 0 rgba(80,80,80,0.35);
-}
-  }
-
-  .steeringPanel {
-    grid-column: 1;
-Margin-top: -130px;
-  }
-
-  .gearPanel {
-    grid-column: 2;
-
-  }
-
-  .speedPanel {
-    grid-column: 3;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-Margin-top: -150px;
-  }
-
-  .pedalRow {
-    grid-column: 4;
-    justify-content: center;
-Margin-top: 30px;
-
-  }
-}
-#correctionBox {
-  position: fixed;
-  top: 75px;
-  left: 10px;
-  z-index: 99999;
-
-  background: rgba(0,0,0,0.65);
-  color: white;
-
-  padding: 5px 10px;
-  border-radius: 8px;
-
-  font-size: 16px;
-  font-weight: bold;
-
-  pointer-events: none;
-}
-
-
-</style>
-</head>
-
-<body>
-
-<h2>CE Grundfahraufgabe</h2>
-<p>Umkehren durch Rückwärtsfahren nach links</p>
-
-
-<canvas id="game" width="1100" height="700"></canvas>
-<div id="watermark">
-  © HptFw Lang
-</div>
-
-
-<div id="correctionBox">Korrekturzüge: 0 / 4</div>
-
-<button id="restartBtn" style="
-display:none;
-position:fixed;
-top:85%;
-left:50%;
-transform:translate(-50%,-50%);
-font-size:28px;
-padding:20px 40px;
-z-index:1000;
-border:none;
-border-radius:12px;
-background:#1f8f3a;
-color:white;
-font-weight:bold;
-">
-Neu starten
-</button>
-
-<div class="controls">
-
-<div class="gearPanel">
-  <button id="gearRBtn">R</button>
-  <button id="gearDBtn">D</button>
-</div>
-
-<div class="pedalRow">
-<button class="pedal brake" id="brakeBtn">
-  <img id="brakeImg" src="brakepedal.png">
-</button>
-
-<button class="pedal gas" id="gasBtn">
-  <img id="gasImg" src="gaspedal.png">
-</button>
-</div>
-
-
-
-  <div class="steeringPanel">
-    <div id="steerDisplay">Lenkeinschlag: 0 %</div>
-
-    <div id="steeringWheel">
-      <img
-        id="steeringWheelImg"
-        src="Lenkrad.png"
-        draggable="false"
-      >
-    </div>
-
-   
-  </div>
-
-<div class="speedPanel">
-
-  <div id="speedDisplay">
-    Max. Geschwindigkeit: 4
-  </div>
-
-  <input
-    type="range"
-    id="speedSlider"
-    min="1"
-    max="10"
-    value="4"
-  >
-
-  <button id="followBtn">
-    Zentrieren
-  </button>
-
-
-</div>
-
-
-
-
-<script>
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
+/* =========================================================
+   15 KAMERA UND KOORDINATEN
+   ========================================================= */
 
 function resizeCanvas() {
   canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight - 170;
+  canvas.height = window.innerHeight;
 }
 
 window.addEventListener("resize", resizeCanvas);
 window.addEventListener("orientationchange", resizeCanvas);
-
 resizeCanvas();
+
+function centerCameraOnHitch() {
+  const hitchPoint = getHitchPoint();
+  camera.x = hitchPoint.x;
+  camera.y = hitchPoint.y + activeTask.cameraYOffset;
+}
 
 function screenToWorld(clientX, clientY) {
   const rect = canvas.getBoundingClientRect();
@@ -3114,770 +1929,116 @@ function screenToWorld(clientX, clientY) {
   const canvasY =
     (clientY - rect.top) * (canvas.height / rect.height);
 
-  const worldX =
-    (canvasX - canvas.width / 2) / camera.zoom + camera.x;
-
-  const worldY =
-    (canvasY - canvas.height / 2) / camera.zoom + camera.y;
-
   return {
-    x: Math.round(worldX),
-    y: Math.round(worldY)
+    x: Math.round(camera.x + (canvasX - canvas.width / 2) / camera.zoom),
+    y: Math.round(camera.y + (canvasY - canvas.height / 2) / camera.zoom)
   };
 }
 
+function updateCoordBox(clientX, clientY) {
+  if (!activeTask) return;
 
 
-canvas.addEventListener("mousemove", (e) => {
-  updateCoordBox(e.clientX, e.clientY);
-});
-
-
-//rechte Maustaste zum navigieren
-
-canvas.addEventListener("contextmenu", (e) => {
-  e.preventDefault();
-});
-
-canvas.addEventListener("mousedown", (e) => {
-
-  if (e.button !== 2) return;
-
-  draggingMouse = true;
-
-  lastMouseX = e.clientX;
-  lastMouseY = e.clientY;
-
-  followTruck = false;
-
-});
-
-canvas.addEventListener("mousemove", (e) => {
-
-  if (!draggingMouse) return;
-
-  const dx = e.clientX - lastMouseX;
-  const dy = e.clientY - lastMouseY;
-
-  camera.x -= dx / camera.zoom;
-  camera.y -= dy / camera.zoom;
-
-  lastMouseX = e.clientX;
-  lastMouseY = e.clientY;
-
-});
-
-canvas.addEventListener("mouseup", () => {
-  draggingMouse = false;
-});
-
-canvas.addEventListener("mouseleave", () => {
-  draggingMouse = false;
-});
-
-
-// touch zum navigieren
-
-canvas.addEventListener("touchmove", (e) => {
-  if (e.touches.length === 1) {
-    updateCoordBox(
-      e.touches[0].clientX,
-      e.touches[0].clientY
-    );
-  }
-}, { passive: false });
-
-canvas.addEventListener("wheel", (e) => {
-  e.preventDefault();
-
-  // Weltposition unter der Maus VOR dem Zoom merken
-  const beforeZoom = screenToWorld(e.clientX, e.clientY);
-
-  // Mausrad hoch = reinzoomen, runter = rauszoomen
-  const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
-
-  camera.zoom *= zoomFactor;
-
-  // Grenzen für den Zoom
-  camera.zoom = Math.max(0.2, Math.min(camera.zoom, 2.5));
-
-  // Weltposition unter der Maus NACH dem Zoom berechnen
-  const afterZoom = screenToWorld(e.clientX, e.clientY);
-
-  // Kamera so verschieben, dass unter der Maus derselbe Punkt bleibt
-  camera.x += beforeZoom.x - afterZoom.x;
-  camera.y += beforeZoom.y - afterZoom.y;
-
-  // Automatisches Folgen ausschalten
-  followTruck = false;
-
-}, { passive: false });
-canvas.addEventListener("touchstart", (e) => {
-
-  if (e.touches.length === 1) {
-
-    draggingMap = true;
-
-    lastTouchX = e.touches[0].clientX;
-    lastTouchY = e.touches[0].clientY;
-  }
-
-}, { passive:false });
-
-
-
-canvas.addEventListener("touchmove", (e) => {
-
-  if (draggingMap && e.touches.length === 1) {
-
-    const touch = e.touches[0];
-
-    const dx = touch.clientX - lastTouchX;
-    const dy = touch.clientY - lastTouchY;
-
-    followTruck = false;
-
-    camera.x -= dx / camera.zoom;
-    camera.y -= dy / camera.zoom;
-
-    lastTouchX = touch.clientX;
-    lastTouchY = touch.clientY;
-  }
-
-}, { passive:false });
-
-canvas.addEventListener("touchstart", (e) => {
-  if (e.touches.length === 2) {
-    e.preventDefault();
-
-    draggingMap = false;
-
-    const dx = e.touches[0].clientX - e.touches[1].clientX;
-    const dy = e.touches[0].clientY - e.touches[1].clientY;
-
-    pinchStartDistance = Math.hypot(dx, dy);
-    startZoom = camera.zoom;
-  }
-}, { passive: false });
-
-canvas.addEventListener("touchmove", (e) => {
-  if (e.touches.length === 2 && pinchStartDistance !== null) {
-    e.preventDefault();
-
-    const dx = e.touches[0].clientX - e.touches[1].clientX;
-    const dy = e.touches[0].clientY - e.touches[1].clientY;
-
-    const currentDistance = Math.hypot(dx, dy);
-    const zoomFactor = currentDistance / pinchStartDistance;
-
-    camera.zoom = startZoom * zoomFactor;
-    camera.zoom = Math.max(0.3, Math.min(camera.zoom, 1.8));
-  }
-}, { passive: false });
-
-canvas.addEventListener("touchend", (e) => {
-  if (e.touches.length < 2) {
-    pinchStartDistance = null;
-  }
-});
-
-canvas.addEventListener("touchend", () => {
-  draggingMap = false;
-});
-
-const gasBtn = document.getElementById("gasBtn");
-const brakeBtn = document.getElementById("brakeBtn");
-const gasImg = document.getElementById("gasImg");
-const brakeImg = document.getElementById("brakeImg");const gearRBtn = document.getElementById("gearRBtn");
-const gearDBtn = document.getElementById("gearDBtn");
-const steeringWheel = document.getElementById("steeringWheel");
-const steerDisplay = document.getElementById("steerDisplay");
-const speedSlider = document.getElementById("speedSlider");
-const speedDisplay = document.getElementById("speedDisplay");
-const restartBtn = document.getElementById("restartBtn");
-const followBtn = document.getElementById("followBtn");
-const correctionBox = document.getElementById("correctionBox");
-const controls = document.querySelector(".controls");
-
-
-let maxSpeed = 4;
-
-const keys = {};
-document.addEventListener("keydown", e => {
-  keys[e.key.toLowerCase()] = true;
-  if (["w", "a", "s", "d", "r", " "].includes(e.key.toLowerCase())) {
-    e.preventDefault();
-  }
-});
-
-followBtn.addEventListener("click", () => {
-
-  followTruck = true;
-  introActive = false;
-
-  const hitchX =
-    truck.x - Math.cos(truck.angle) * truck.length / 2;
-
-  const hitchY =
-    truck.y - Math.sin(truck.angle) * truck.length / 2;
-
-  camera.x = hitchX;
-  camera.y = hitchY - 20;
-});
-
-document.addEventListener("keyup", e => {
-  keys[e.key.toLowerCase()] = false;
-});
-
-let gasPressed = false;
-let brakePressed = false;
-let leftPressed = false;
-let rightPressed = false;
-let wheelAngle = 0;
-let wheelDragging = false;
-let lastPointerAngle = 0;
-let gear = "D";
-const maxWheelAngle = 450;
-
-
-function holdButton(button, setter) {
-  button.addEventListener("mousedown", () => setter(true));
-  button.addEventListener("mouseup", () => setter(false));
-  button.addEventListener("mouseleave", () => setter(false));
-
-  button.addEventListener("touchstart", e => {
-    e.preventDefault();
-    setter(true);
-  }, { passive: false });
-
-  button.addEventListener("touchend", e => {
-    e.preventDefault();
-    setter(false);
-  });
-
-  button.addEventListener("touchcancel", () => setter(false));
+  const p = screenToWorld(clientX, clientY);
+  coordBox.textContent = "X: " + p.x + " | Y: " + p.y;
 }
 
-holdButton(gasBtn, v => {
-  gasPressed = v;
+/* =========================================================
+   16 ZEICHNEN
+   ========================================================= */
 
-  gasImg.src = v
-    ? "gaspedalpressed.png"
-    : "gaspedal.png";
-});
+function drawGame() {
+  if (!activeTask || !truck || !trailer) return;
 
-holdButton(brakeBtn, v => {
-  brakePressed = v;
+  updateIntro();
 
-  brakeImg.src = v
-    ? "brakepedalpressed.png"
-    : "brakepedal.png";
-});
-
-
-function updateGearButtons() {
-  gearRBtn.classList.toggle("activeGear", gear === "R");
-  gearDBtn.classList.toggle("activeGear", gear === "D");
-}
-
-gearRBtn.addEventListener("click", () => {
-  gear = "R";
-  updateGearButtons();
-});
-
-gearDBtn.addEventListener("click", () => {
-  gear = "D";
-  updateGearButtons();
-});
-
-updateGearButtons();
-
-function getPointerAngle(e) {
-  const rect = steeringWheel.getBoundingClientRect();
-  const cx = rect.left + rect.width / 2;
-  const cy = rect.top + rect.height / 2;
-
-  return Math.atan2(e.clientY - cy, e.clientX - cx) * 180 / Math.PI;
-}
-
-function updateWheelVisual() {
- document.getElementById("steeringWheelImg").style.transform =
-  "rotate(" + wheelAngle + "deg)";
-  steeringValue = wheelAngle / maxWheelAngle;
-  truck.steeringAngle = steeringValue * 0.8;
-  steerDisplay.innerText = "Lenkrad: " + Math.round(wheelAngle) + "°";
-}
-
-steeringWheel.addEventListener("pointerdown", e => {
-  wheelDragging = true;
-  lastPointerAngle = getPointerAngle(e);
-  steeringWheel.setPointerCapture(e.pointerId);
-});
-
-steeringWheel.addEventListener("pointermove", e => {
-  if (!wheelDragging) return;
-
-  const currentAngle = getPointerAngle(e);
-  let diff = currentAngle - lastPointerAngle;
-
-  if (diff > 180) diff -= 360;
-  if (diff < -180) diff += 360;
-
-  wheelAngle += diff;
-  wheelAngle = Math.max(-maxWheelAngle, Math.min(maxWheelAngle, wheelAngle));
-
-  lastPointerAngle = currentAngle;
-  updateWheelVisual();
-});
-
-steeringWheel.addEventListener("pointerup", e => {
-  wheelDragging = false;
-  steeringWheel.releasePointerCapture(e.pointerId);
-});
-
-steeringWheel.addEventListener("pointercancel", () => {
-  wheelDragging = false;
-});
-
-speedSlider.addEventListener("input", () => {
-  maxSpeed = Number(speedSlider.value);
-  speedDisplay.innerText =
-    "Max. Geschwindigkeit: " + maxSpeed;
-});
-
-
-// Bilder laden
-const envImage = new Image();
-const truckImageRaw = new Image();
-const trailerImageRaw = new Image();
-const steeringWheelImage = new Image();
-steeringWheelImage.src = "Lenkrad.png";
-
-
-let envLoaded = false;
-let truckSpriteLoaded = false;
-let trailerSpriteLoaded = false;
-
-envImage.src = "umgebung.png";
-truckImageRaw.src = "fahrzeug_sprite_1.png";
-trailerImageRaw.src = "fahrzeug_sprite_2.png";
-
-envImage.onload = () => envLoaded = true;
-
-const truckSpriteCanvas = document.createElement("canvas");
-const truckSpriteCtx = truckSpriteCanvas.getContext("2d");
-
-const trailerSpriteCanvas = document.createElement("canvas");
-const trailerSpriteCtx = trailerSpriteCanvas.getContext("2d");
-
-truckImageRaw.onload = () => {
-  prepareTransparentSprite(truckImageRaw, truckSpriteCanvas, truckSpriteCtx);
-  truckSpriteLoaded = true;
-};
-
-trailerImageRaw.onload = () => {
-  prepareTransparentSprite(trailerImageRaw, trailerSpriteCanvas, trailerSpriteCtx);
-  trailerSpriteLoaded = true;
-};
-
-function prepareTransparentSprite(image, spriteCanvas, spriteCtx) {
-    spriteCanvas.width = image.width;
-    spriteCanvas.height = image.height;
-
-    spriteCtx.clearRect(0,0,spriteCanvas.width,spriteCanvas.height);
-    spriteCtx.drawImage(image,0,0);
-}
-const world = {
-  width: 3500,
-  height: 2300
-};
-
-const camera = {
-  zoom: 0.65,
-  x: 0,
-  y: 0
-};
-
-let pinchStartDistance = null;
-let startZoom = camera.zoom;
-let followTruck = true;
-let draggingMap = false;
-let lastTouchX = 0;
-let lastTouchY = 0;
-let draggingMouse = false;
-let lastMouseX = 0;
-let lastMouseY = 0;
-
-let truck, trailer;
-let crashed = false;
-let crashReason = "KOLLISION!";
-let taskCompleted = false;
-let markingViolationPoint = null;
-let steeringValue = 0;
-
-let correctionMoves = 0;
-let hasReversedOnce = false;
-let wasReversing = false;
-let correctionCounterStopped = false;
-let correctionCounterStarted = false;
-
-let startTime = Date.now();
-let finishTime = null;
-
-function reset() {
-
-controls.style.display = "";
-
-startTime = Date.now();
-finishTime = null;
-  crashed = false;
-  crashReason = "";
-  taskCompleted = false;
-  steeringValue = 0;
-
-  correctionMoves = 0;
-  hasReversedOnce = false;
-  wasReversing = false;
-  correctionCounterStopped = false;
-  correctionCounterStarted = false;
-
-
-  steeringValue = 0;
-const randomYOffset =
-  (Math.random() < 0.5 ? -1 : 1) *
-  (Math.floor(Math.random() * 2) + 1);
-
-  truck = {
-  x: 1750,
-  y: 1100,
-  angle: Math.PI,
-  speed: 0,
-  length: 360,
-  width: 90,
-  steeringAngle: 0
-};
-
-
-trailer = {
-  x: 2145,
-  y: 1100 + randomYOffset,
-  angle: Math.PI,
-  length: 260,
-  width: 90,
-  drawbarAngle: Math.PI,
-  drawbarLength: 100
-};
-}
-
-reset();
-
-restartBtn.style.display = "none";
-
-restartBtn.addEventListener("click", () => {
-  reset();
-  restartBtn.style.display = "none";
-});
-
-correctionMoves = 0;
-hasReversedOnce = false;
-wasReversing = false;
-
-correctionCounterStopped = false;
-correctionCounterStarted = false;
-
-crashReason = "";
-
-taskCompleted = false;
-
-function normalizeAngle(angle) {
-  while (angle > Math.PI) angle -= Math.PI * 2;
-  while (angle < -Math.PI) angle += Math.PI * 2;
-  return angle;
-}
-
-function angleLerp(current, target, factor) {
-  const diff = normalizeAngle(target - current);
-  return current + diff * factor;
-}
-
-function update() {
-  if (keys["r"]) reset();
-  if (crashed) return;
-if (checkTaskCompleted()) {
-  taskCompleted = true;
-  finishTime = Date.now();
-  restartBtn.style.display = "block";
-controls.style.display = "none";
-}
-
-  // PC: W = vorwärts, S = rückwärts
-  if (keys["w"] || keys["arrowup"]) {
-    truck.speed += 0.01 * maxSpeed;
+  if (followTruck && !introActive) {
+    centerCameraOnHitch();
   }
 
-  if (keys["s"] || keys["arrowdown"]) {
-    truck.speed -= 0.01 * maxSpeed;
-  }
-
-  // Handy: Gas fährt je nach Gang D oder R
-  if (gasPressed) {
-    if (gear === "D") {
-      truck.speed += 0.01 * maxSpeed;
-    }
-
-    if (gear === "R") {
-      truck.speed -= 0.01 * maxSpeed;
-    }
-  }
-
-  // Handy-Bremse bremst nur
-  if (brakePressed) {
-    truck.speed *= 0.88;
-
-    if (Math.abs(truck.speed) < 0.05) {
-      truck.speed = 0;
-    }
-  }
-
-  truck.speed *= 0.968;
-
-  truck.speed = Math.max(
-    Math.min(truck.speed, maxSpeed),
-    -maxSpeed
-  );
-
- if (keys["a"] || keys["arrowleft"]) {
-    wheelAngle -= 8;
-  }
-
-  if (keys["d"] || keys["arrowright"]) {
-    wheelAngle += 8;
-  }
-
-  wheelAngle = Math.max(-maxWheelAngle, Math.min(maxWheelAngle, wheelAngle));
-
-  if (!wheelDragging && !keys["a"] && !keys["d"] && Math.abs(truck.speed) > 0.05) {
-    wheelAngle *= 0.985;
-
-    if (Math.abs(wheelAngle) < 1) {
-      wheelAngle = 0;
-    }
-  }
-
-  updateWheelVisual();
-
-  const rearAxleOffset = -95;
-  const wheelBase = 225;
-
-  if (Math.abs(truck.speed) > 0.03) {
-    const rearX = truck.x + Math.cos(truck.angle) * rearAxleOffset;
-    const rearY = truck.y + Math.sin(truck.angle) * rearAxleOffset;
-
-    const turnAmount =
-      (truck.speed / wheelBase) * Math.tan(truck.steeringAngle);
-
-    const newRearX = rearX + Math.cos(truck.angle) * truck.speed;
-    const newRearY = rearY + Math.sin(truck.angle) * truck.speed;
-
-    truck.angle += turnAmount;
-
-    truck.x = newRearX - Math.cos(truck.angle) * rearAxleOffset;
-    truck.y = newRearY - Math.sin(truck.angle) * rearAxleOffset;
-  }
-
-  updateTrailer();
-
-
-
-
-if (checkRoadMarkingViolation()) {
-  crashed = true;
-
-  if (!crashReason) {
-    crashReason = "MARKIERUNG ÜBERFAHREN!";
-  }
-
-  truck.speed = 0;
-  restartBtn.style.display = "block";
-  controls.style.display = "none";
-  return;
-}
-
-if (checkTruckTrailerCollision()) {
-  crashed = true;
-  crashReason = "KOLLISION!";
-  truck.speed = 0;
-  restartBtn.style.display = "block";
-  controls.style.display = "none";
-  return;
-}
-
-steerDisplay.innerText = "Lenkrad: " + Math.round(wheelAngle) + "°";
-}
-
-function localToWorld(obj, localX, localY) {
-  return {
-    x: obj.x + Math.cos(obj.angle) * localX - Math.sin(obj.angle) * localY,
-    y: obj.y + Math.sin(obj.angle) * localX + Math.cos(obj.angle) * localY
-  };
-}
-
-
-function getWheelTriggerPoints() {
-  const points = [];
-
-  // LKW Hinterachse
-  points.push(localToWorld(truck, -95, -truck.width / 3 - 2));
-  points.push(localToWorld(truck, -95,  truck.width / 3 + 2));
-
-  // LKW Vorderachse
-  points.push(localToWorld(truck, 130, -truck.width / 3 - 2));
-  points.push(localToWorld(truck, 130,  truck.width / 3 + 2));
-
-  // Anhänger Hinterachse
-  points.push(localToWorld(trailer, -80, -trailer.width / 3 - 10));
-  points.push(localToWorld(trailer, -80,  trailer.width / 3 + 10));
-
-  // Anhänger Vorderachse / Drehschemelachse
-  const frontAxleX = trailer.length / 2 - 25;
-  const axleCenter = localToWorld(trailer, frontAxleX, 0);
-
-  points.push({
-    x: axleCenter.x + Math.cos(trailer.drawbarAngle + Math.PI / 2) * (trailer.width / 3 + 10),
-    y: axleCenter.y + Math.sin(trailer.drawbarAngle + Math.PI / 2) * (trailer.width / 3 + 10)
-  });
-
-  points.push({
-    x: axleCenter.x + Math.cos(trailer.drawbarAngle - Math.PI / 2) * (trailer.width / 3 + 10),
-    y: axleCenter.y + Math.sin(trailer.drawbarAngle - Math.PI / 2) * (trailer.width / 3 + 10)
-  });
-
-  return points;
-}
-
-function drawWheelTriggerDebug() {
-  const points = getWheelTriggerPoints();
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   ctx.save();
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.scale(camera.zoom, camera.zoom);
+  ctx.translate(-camera.x, -camera.y);
 
-  for (const p of points) {
+  drawRoad();
+  drawTaskMarkings();
+  drawTrailer();
+  drawDrawbar();
+  drawTruck();
 
-// obere Linie
-if (p.y < markingLimits.topLimit && p.x >= 1100 && p.x <= 2700) {
-  markingViolationPoint = p;
-  crashReason = "MARKIERUNG ÜBERFAHREN!";
-  return true;
+  if (showReverseGuideLines) {
+    drawReverseGuideLines();
+  }
+
+  ctx.restore();
+
+  drawHud();
+
+  if (crashed) {
+    drawCrashOverlay();
+  }
+
+  if (taskCompleted) {
+    drawSuccessOverlay();
+  }
 }
 
-// untere linke Linie
-if (p.y > 1365 && p.x >= 1100 && p.x <= 1450) {
-  markingViolationPoint = p;
-  crashReason = "MARKIERUNG ÜBERFAHREN!";
-  return true;
+function drawRoad() {
+  if (envLoaded) {
+    ctx.drawImage(envImage, 0, 0, GLOBAL.worldWidth, GLOBAL.worldHeight);
+  } else {
+    ctx.fillStyle = "#3f7f35";
+    ctx.fillRect(0, 0, GLOBAL.worldWidth, GLOBAL.worldHeight);
+  }
 }
 
-// untere rechte Linie
-if (p.y > 1365 && p.x >= 2280 && p.x <= 2700) {
-  markingViolationPoint = p;
-  crashReason = "MARKIERUNG ÜBERFAHREN!";
-  return true;
-}
-    const isViolation =
-      markingViolationPoint &&
-      Math.abs(p.x - markingViolationPoint.x) < 1 &&
-      Math.abs(p.y - markingViolationPoint.y) < 1;
-
+function drawTaskMarkings() {
+  if (introActive && activeTask.introEnabled) {
+    ctx.save();
+    ctx.strokeStyle = "red";
+    ctx.lineWidth = 10;
     ctx.beginPath();
-    ctx.arc(p.x, p.y, isViolation ? 12 : 8, 0, Math.PI * 2);
-    ctx.fillStyle = isViolation ? "red" : "lime";
-    ctx.fill();
+    ctx.moveTo(activeTask.introRampX, activeTask.introRampTopY);
+    ctx.lineTo(activeTask.introRampX, activeTask.introRampBottomY);
+    ctx.stroke();
+    ctx.restore();
+  }
 
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 2;
+  if (!activeTask.roadMarking) return;
+
+  ctx.save();
+  ctx.strokeStyle = "white";
+  ctx.lineWidth = 4;
+
+  for (const line of activeTask.roadMarking.visibleLines) {
+    ctx.beginPath();
+    ctx.moveTo(line.x1, line.y1);
+    ctx.lineTo(line.x2, line.y2);
     ctx.stroke();
   }
+
+  const leftCurve = buildTriggerLine(
+    activeTask.roadMarking.leftTop,
+    activeTask.roadMarking.leftBottom
+  );
+
+  const rightCurve = buildTriggerLine(
+    activeTask.roadMarking.rightTop,
+    activeTask.roadMarking.rightBottom
+  );
+
+  drawPolyline(leftCurve);
+  drawPolyline(rightCurve);
 
   ctx.restore();
 }
 
-
-const markingLimits = {
-  topLimit: 975,
-  tolerance: 8,
-
-  leftTop:    { x: 1450, y: 1365 },
-  leftBottom: { x: 1700, y: 1615 },
-
-  rightTop:    { x: 2285
-, y: 1365 },
-  rightBottom: { x: 2030, y: 1610 }
-};
-
-
-
-function bezierPoint(p0, p1, p2, t) {
-  const mt = 1 - t;
-
-  return {
-    x: mt * mt * p0.x + 2 * mt * t * p1.x + t * t * p2.x,
-    y: mt * mt * p0.y + 2 * mt * t * p1.y + t * t * p2.y
-  };
-}
-
-function buildLeftTriggerLine() {
-  const points = [];
-  const { leftTop, leftBottom } = markingLimits;
-
-  const control = {
-    x: leftBottom.x,
-    y: leftTop.y
-  };
-
-  for (let i = 0; i <= 80; i++) {
-    const t = i / 80;
-    points.push(bezierPoint(leftTop, control, leftBottom, t));
-  }
-
-  for (let y = leftBottom.y + 5; y <= world.height; y += 5) {
-    points.push({
-      x: leftBottom.x,
-      y: y
-    });
-  }
-
-  return points;
-}
-
-function buildRightTriggerLine() {
-  const points = [];
-  const { rightTop, rightBottom } = markingLimits;
-
-  const control = {
-    x: rightBottom.x,
-    y: rightTop.y
-  };
-
-  for (let i = 0; i <= 80; i++) {
-    const t = i / 80;
-    points.push(bezierPoint(rightTop, control, rightBottom, t));
-  }
-
-  for (let y = rightBottom.y + 5; y <= world.height; y += 5) {
-    points.push({
-      x: rightBottom.x,
-      y: y
-    });
-  }
-
-  return points;
-}
-
-function drawPolyline(points, color, width) {
+function drawPolyline(points) {
   if (!points.length) return;
 
-  ctx.save();
-  ctx.strokeStyle = color;
-  ctx.lineWidth = width;
   ctx.beginPath();
   ctx.moveTo(points[0].x, points[0].y);
 
@@ -3886,337 +2047,19 @@ function drawPolyline(points, color, width) {
   }
 
   ctx.stroke();
-  ctx.restore();
 }
 
-function drawRoadTriggerDebug() {
-  const leftLine = buildLeftTriggerLine();
-  const rightLine = buildRightTriggerLine();
-
-  drawPolyline(leftLine, "white", 4);
-  drawPolyline(rightLine, "white", 4);
-}
-
-function getBoundaryXAtY(linePoints, y) {
-  for (let i = 0; i < linePoints.length - 1; i++) {
-    const p1 = linePoints[i];
-    const p2 = linePoints[i + 1];
-
-    const minY = Math.min(p1.y, p2.y);
-    const maxY = Math.max(p1.y, p2.y);
-
-    if (y >= minY && y <= maxY) {
-      const dy = p2.y - p1.y;
-
-      if (Math.abs(dy) < 0.0001) {
-        return p1.x;
-      }
-
-      const t = (y - p1.y) / dy;
-      return p1.x + (p2.x - p1.x) * t;
-    }
-  }
-
-  return null;
-}
-
-function isTruckCompletelyBelowY(limitY) {
-  const corners = getCorners(truck);
-
-  return corners.every(p => p.y > limitY);
-}
-
-function updateCorrectionCounter() {
-if (!correctionCounterStarted) {
-  if (truck.x < 1400) {
-    correctionCounterStarted = true;
-  } else {
-    return;
-  }
-}
-  if (correctionCounterStopped) return;
-
-  if (isTruckCompletelyBelowY(1300)) {
-    correctionCounterStopped = true;
-    return;
-  }
-
-  const isReversingNow = truck.speed < -0.05;
-  const isDrivingForwardNow = truck.speed > 0.05;
-
-  if (isReversingNow) {
-    hasReversedOnce = true;
-    wasReversing = true;
-  }
-
-  if (
-    hasReversedOnce &&
-    wasReversing &&
-    isDrivingForwardNow
-  ) {
-    correctionMoves++;
-    wasReversing = false;
-
-    if (correctionMoves > 4) {
-      crashed = true;
-      crashReason = "ZU VIELE KORREKTURZÜGE!";
-      truck.speed = 0;
-      restartBtn.style.display = "block";
-      controls.style.display = "none";
-    }
-  }
-}
-
-
-function checkRoadMarkingViolation() {
-  const wheelPoints = getWheelTriggerPoints();
-
-  const leftLine = buildLeftTriggerLine();
-  const rightLine = buildRightTriggerLine();
-
-  markingViolationPoint = null;
-
-  for (const p of wheelPoints) {
-    if (p.y < markingLimits.topLimit) {
-      markingViolationPoint = p;
-      return true;
-    }
-
-    const leftX = getBoundaryXAtY(leftLine, p.y);
-    const rightX = getBoundaryXAtY(rightLine, p.y);
-
-    const tireHalfWidth = 10;
-
-// Spielfeldgrenzen links/rechts
-if (p.x < -20) {
-  markingViolationPoint = p;
-  crashReason = "BEREICH VERLASSEN!";
-  return true;
-}
-
-if (p.x > 3500) {
-  markingViolationPoint = p;
-  crashReason = "BEREICH VERLASSEN!";
-  return true;
-}
-
-if (p.y > 2300) {
-  markingViolationPoint = p;
-  crashReason = "BEREICH VERLASSEN!";
-  return true;
-}
-
-if (leftX !== null && p.x < leftX + tireHalfWidth - markingLimits.tolerance) {
-  markingViolationPoint = p;
-  return true;
-}
-
-if (rightX !== null && p.x > rightX - tireHalfWidth + markingLimits.tolerance) {
-  markingViolationPoint = p;
-  return true;
-}
-  }
-
-  return false;
-}
-
-function updateTrailer() {
-
-updateCorrectionCounter();
-
-if (crashed) return;
-
-
-  const hitchX =
-    truck.x - Math.cos(truck.angle) * truck.length / 2;
-
-  const hitchY =
-    truck.y - Math.sin(truck.angle) * truck.length / 2;
-
-  const frontAxleOffset = trailer.length / 2 - 25;
-
-  // aktueller Drehschemelpunkt am Anhänger
-  const currentFrontX =
-    trailer.x + Math.cos(trailer.angle) * frontAxleOffset;
-
-  const currentFrontY =
-    trailer.y + Math.sin(trailer.angle) * frontAxleOffset;
-
-  // Richtung vom Drehschemel zur Kupplung
-  const dx = hitchX - currentFrontX;
-  const dy = hitchY - currentFrontY;
-
-
-  trailer.drawbarAngle = Math.atan2(dy, dx);
-
-  // neuer Drehschemelpunkt mit fester Deichsellänge
-  const newFrontAxleX =
-    hitchX - Math.cos(trailer.drawbarAngle) * trailer.drawbarLength;
-
-  const newFrontAxleY =
-    hitchY - Math.sin(trailer.drawbarAngle) * trailer.drawbarLength;
-
-  // Anhänger richtet sich direkt auf den neuen Drehschemelpunkt aus
-  trailer.angle = Math.atan2(
-    newFrontAxleY - trailer.y,
-    newFrontAxleX - trailer.x
-  );
-
-  // Anhängerposition vom Drehschemelpunkt zurückrechnen
-  trailer.x =
-    newFrontAxleX - Math.cos(trailer.angle) * frontAxleOffset;
-
-  trailer.y =
-    newFrontAxleY - Math.sin(trailer.angle) * frontAxleOffset;
-
-  trailer.frontAxleX = newFrontAxleX;
-  trailer.frontAxleY = newFrontAxleY;
-
-  trailer.rearAxleX =
-    trailer.x + Math.cos(trailer.angle) * -90;
-
-  trailer.rearAxleY =
-    trailer.y + Math.sin(trailer.angle) * -90;
-}
-function getCorners(obj) {
-  const c = Math.cos(obj.angle);
-  const s = Math.sin(obj.angle);
-  const hl = obj.length / 2;
-  const hw = obj.width / 2;
-
-  return [
-    { x: obj.x + c * hl - s * hw, y: obj.y + s * hl + c * hw },
-    { x: obj.x + c * hl + s * hw, y: obj.y + s * hl - c * hw },
-    { x: obj.x - c * hl + s * hw, y: obj.y - s * hl - c * hw },
-    { x: obj.x - c * hl - s * hw, y: obj.y - s * hl + c * hw }
-  ];
-}
-
-function project(axis, points) {
-  let min = points[0].x * axis.x + points[0].y * axis.y;
-  let max = min;
-
-  for (const p of points) {
-    const val = p.x * axis.x + p.y * axis.y;
-    min = Math.min(min, val);
-    max = Math.max(max, val);
-  }
-
-  return { min, max };
-}
-
-function polygonsCollide(a, b) {
-  const polygons = [a, b];
-
-  for (const poly of polygons) {
-    for (let i = 0; i < poly.length; i++) {
-      const p1 = poly[i];
-      const p2 = poly[(i + 1) % poly.length];
-
-      const edge = { x: p2.x - p1.x, y: p2.y - p1.y };
-      const axis = { x: -edge.y, y: edge.x };
-
-      const len = Math.hypot(axis.x, axis.y);
-      axis.x /= len;
-      axis.y /= len;
-
-      const pa = project(axis, a);
-      const pb = project(axis, b);
-
-      if (pa.max < pb.min || pb.max < pa.min) {
-        return false;
-      }
-    }
-  }
-
-  return true;
-}
-function getDrawbarPolygon() {
-  const hitchX = truck.x - Math.cos(truck.angle) * truck.length / 2;
-  const hitchY = truck.y - Math.sin(truck.angle) * truck.length / 2;
-
-const axleX = trailer.frontAxleX ?? trailer.x + Math.cos(trailer.angle) * (trailer.length / 2 - 25);
-const axleY = trailer.frontAxleY ?? trailer.y + Math.sin(trailer.angle) * (trailer.length / 2 - 25);
-
-  const width = 14;
-
-  // Start etwas hinter der Kupplung, damit die normale Verbindung nicht sofort Kollision auslöst
-  const startX = hitchX - Math.cos(trailer.drawbarAngle) * 55;
-  const startY = hitchY - Math.sin(trailer.drawbarAngle) * 55;
-
-  return [
-    {
-      x: startX + Math.cos(trailer.drawbarAngle + Math.PI / 2) * width,
-      y: startY + Math.sin(trailer.drawbarAngle + Math.PI / 2) * width
-    },
-    {
-      x: startX + Math.cos(trailer.drawbarAngle - Math.PI / 2) * width,
-      y: startY + Math.sin(trailer.drawbarAngle - Math.PI / 2) * width
-    },
-    {
-      x: axleX + Math.cos(trailer.drawbarAngle - Math.PI / 2) * width,
-      y: axleY + Math.sin(trailer.drawbarAngle - Math.PI / 2) * width
-    },
-    {
-      x: axleX + Math.cos(trailer.drawbarAngle + Math.PI / 2) * width,
-      y: axleY + Math.sin(trailer.drawbarAngle + Math.PI / 2) * width
-    }
-  ];
-}
-function checkTruckTrailerCollision() {
-
-  const truckPoly = getCorners(truck);
-  const trailerPoly = getCorners(trailer);
-  const drawbarPoly = getDrawbarPolygon();
-
-  return (
-    polygonsCollide(truckPoly, trailerPoly) ||
-    polygonsCollide(truckPoly, drawbarPoly)
-  );
-}
-
-function checkTaskCompleted() {
-  if (taskCompleted) return false;
-
-  const angle =
-    ((truck.angle % (Math.PI * 2)) + Math.PI * 2) %
-    (Math.PI * 2);
-
-  const facingRight =
-    angle < 0.5 || angle > (Math.PI * 2 - 0.5);
-
-  const inTargetArea =
-    truck.x > 2500 &&
-    truck.y > 900 &&
-    truck.y < 1300;
-
-  return (
-    truck.speed > 0.3 &&
-    facingRight &&
-    inTargetArea
-  );
-}
-function drawFallbackRoad() {
-  ctx.fillStyle = "#3f7f35";
-  ctx.fillRect(0, 0, world.width, world.height);
-
-  ctx.fillStyle = "#666";
-  ctx.fillRect(3500, 2800, 2500, 350);
-  ctx.fillRect(4200, 1800, 500, 1500);
-}
-function drawRoad() {
-  if (envLoaded) {
-    ctx.drawImage(envImage, 0, 0, world.width, world.height);
-  } else {
-    drawFallbackRoad();
-  }
-}
-function drawWheel(x, y, angle) {
+function drawSpriteImage(obj, imageCanvas) {
   ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate(angle);
-  ctx.fillStyle = "black";
-  ctx.fillRect(-13, -5, 26, 10);
+  ctx.translate(obj.x, obj.y);
+  ctx.rotate(obj.angle + Math.PI);
+  ctx.drawImage(
+    imageCanvas,
+    -obj.length / 2,
+    -obj.width / 2,
+    obj.length,
+    obj.width
+  );
   ctx.restore();
 }
 
@@ -4232,25 +2075,15 @@ function drawFallbackVehicle(obj, color) {
   ctx.restore();
 }
 
-
-function drawSpriteImage(obj, imageCanvas) {
+function drawWheel(x, y, angle) {
   ctx.save();
-  ctx.translate(obj.x, obj.y);
-
-  // Deine Fahrzeugbilder zeigen nach rechts.
-  // Die Fahrphysik arbeitet ebenfalls nach rechts bei Winkel 0.
-ctx.rotate(obj.angle + Math.PI);
-
-ctx.drawImage(
-    imageCanvas,
-    -obj.length / 2,
-    -obj.width / 2,
-    obj.length,
-    obj.width
-);
-
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  ctx.fillStyle = "black";
+  ctx.fillRect(-13, -5, 26, 10);
   ctx.restore();
 }
+
 
 function drawTruck() {
   if (truckSpriteLoaded) {
@@ -4259,46 +2092,66 @@ function drawTruck() {
     drawFallbackVehicle(truck, "white");
   }
 
-ctx.save();
-ctx.translate(truck.x, truck.y);
-ctx.rotate(truck.angle);
+  ctx.save();
+  ctx.translate(truck.x, truck.y);
+  ctx.rotate(truck.angle);
 
   drawWheel(-95, -truck.width / 3 - 10, 0);
-  drawWheel(-95, truck.width / 3 + 10, 0);
+  drawWheel(-95,  truck.width / 3 + 10, 0);
   drawWheel(-95, -truck.width / 5 - 10, 0);
-  drawWheel(-95, truck.width / 5 + 10, 0);
-
+  drawWheel(-95,  truck.width / 5 + 10, 0);
 
   drawWheel(130, -truck.width / 3 - 6, truck.steeringAngle);
-  drawWheel (130, truck.width / 3 + 6, truck.steeringAngle);
+  drawWheel(130,  truck.width / 3 + 6, truck.steeringAngle);
 
   ctx.restore();
 }
+
+function drawReverseGuideLines() {
+  const guideLength = 120;
+
+  const halfWidth = truck.width / 2;
+  const halfLength = truck.length / 2;
+
+  const rearLeft = localToWorld(truck, -halfLength, -halfWidth);
+  const rearRight = localToWorld(truck, -halfLength, halfWidth);
+
+  const rearLeftEnd = localToWorld(truck, -halfLength - guideLength, -halfWidth);
+  const rearRightEnd = localToWorld(truck, -halfLength - guideLength, halfWidth);
+
+  ctx.save();
+  ctx.strokeStyle = "red";
+  ctx.lineWidth = 3;
+  ctx.globalAlpha = 0.95;
+  ctx.lineCap = "round";
+
+  ctx.beginPath();
+  ctx.moveTo(rearLeft.x, rearLeft.y);
+  ctx.lineTo(rearLeftEnd.x, rearLeftEnd.y);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(rearRight.x, rearRight.y);
+  ctx.lineTo(rearRightEnd.x, rearRightEnd.y);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
 
 function drawTrailer() {
- if (trailerSpriteLoaded) {
-  ctx.save();
-  ctx.translate(trailer.x, trailer.y);
-  ctx.rotate(trailer.angle + Math.PI);
+  if (trailerSpriteLoaded) {
+    drawSpriteImage(trailer, trailerSpriteCanvas);
+  } else {
+    drawFallbackVehicle(trailer, "green");
+  }
 
-  ctx.drawImage(
-    trailerSpriteCanvas,
-    -trailer.length / 2,
-    -trailer.width / 2,
-    trailer.length,
-    trailer.width
-  );
-
-  ctx.restore();
-} else {
-  drawFallbackVehicle(trailer, "green");
-}
   ctx.save();
   ctx.translate(trailer.x, trailer.y);
   ctx.rotate(trailer.angle);
 
   drawWheel(-90, -trailer.width / 3 - 10, 0);
-  drawWheel(-90, trailer.width / 3 + 10, 0);
+  drawWheel(-90,  trailer.width / 3 + 10, 0);
 
   const frontAxleX = trailer.length / 2 - 25;
   const axleAngle = trailer.drawbarAngle - trailer.angle;
@@ -4311,66 +2164,57 @@ function drawTrailer() {
   ctx.lineWidth = 5;
   ctx.beginPath();
   ctx.moveTo(0, -trailer.width / 2);
-  ctx.lineTo(0, trailer.width / 2);
+  ctx.lineTo(0,  trailer.width / 2);
   ctx.stroke();
 
   drawWheel(0, -trailer.width / 3 - 10, 0);
-  drawWheel(0, trailer.width / 3 + 10, 0);
+  drawWheel(0,  trailer.width / 3 + 10, 0);
 
   ctx.restore();
   ctx.restore();
 }
 
-
-
 function drawDrawbar() {
-  const hitchX = truck.x - Math.cos(truck.angle) * truck.length / 2;
-  const hitchY = truck.y - Math.sin(truck.angle) * truck.length / 2;
+  const hitchPoint = getHitchPoint();
 
-const axleX = trailer.frontAxleX ?? trailer.x + Math.cos(trailer.angle) * (trailer.length / 2 - 25);
-const axleY = trailer.frontAxleY ?? trailer.y + Math.sin(trailer.angle) * (trailer.length / 2 - 25);
+  const axleX = trailer.frontAxleX ?? trailer.x + Math.cos(trailer.angle) * (trailer.length / 2 - 25);
+  const axleY = trailer.frontAxleY ?? trailer.y + Math.sin(trailer.angle) * (trailer.length / 2 - 25);
 
-const pivotRadius = 19;
+  const pivotRadius = 19;
 
-const leftX = axleX + Math.cos(trailer.drawbarAngle + Math.PI / 2) * pivotRadius;
-const leftY = axleY + Math.sin(trailer.drawbarAngle + Math.PI / 2) * pivotRadius;
+  const leftX = axleX + Math.cos(trailer.drawbarAngle + Math.PI / 2) * pivotRadius;
+  const leftY = axleY + Math.sin(trailer.drawbarAngle + Math.PI / 2) * pivotRadius;
 
-const rightX = axleX + Math.cos(trailer.drawbarAngle - Math.PI / 2) * pivotRadius;
-const rightY = axleY + Math.sin(trailer.drawbarAngle - Math.PI / 2) * pivotRadius;
+  const rightX = axleX + Math.cos(trailer.drawbarAngle - Math.PI / 2) * pivotRadius;
+  const rightY = axleY + Math.sin(trailer.drawbarAngle - Math.PI / 2) * pivotRadius;
 
   ctx.beginPath();
-  ctx.moveTo(hitchX, hitchY);
+  ctx.moveTo(hitchPoint.x, hitchPoint.y);
   ctx.lineTo(leftX, leftY);
   ctx.lineTo(rightX, rightY);
   ctx.closePath();
-
-
   ctx.strokeStyle = "black";
   ctx.lineWidth = 4;
   ctx.stroke();
 
   ctx.beginPath();
-  ctx.arc(hitchX, hitchY, 5, 0, Math.PI * 2);
+  ctx.arc(hitchPoint.x, hitchPoint.y, 5, 0, Math.PI * 2);
   ctx.fillStyle = "black";
   ctx.fill();
 
-ctx.beginPath();
-ctx.arc(axleX, axleY, 19, 0, Math.PI * 2);
-
-ctx.strokeStyle = "black";
-ctx.lineWidth = 4;
-ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(axleX, axleY, 19, 0, Math.PI * 2);
+  ctx.strokeStyle = "black";
+  ctx.lineWidth = 4;
+  ctx.stroke();
 }
 
 function drawHud() {
-
-if (correctionBox) {
-  correctionBox.innerText = "Korrekturzüge: " + correctionMoves + " / 4";
+  correctionBox.textContent =
+    "Korrekturzüge: " + correctionMoves + " / " + activeTask.maxCorrectionMoves;
 }
 
-}
-
-function drawCollisionOverlay() {
+function drawCrashOverlay() {
   ctx.fillStyle = "rgba(0,0,0,0.75)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -4381,79 +2225,156 @@ function drawCollisionOverlay() {
   ctx.fillStyle = "red";
   ctx.font = isPortrait ? "28px Arial" : "52px Arial";
 
-  ctx.fillText(
-    crashReason,
-    canvas.width / 2,
-    canvas.height / 2 - 80
-  );
+  let title = crashReason;
+
+  if (crashReason === "ANHÄNGER HAT RAMPE BERÜHRT" || crashReason === "FAHRZEUG TOUCHIERT") {
+    title = "KOLLISION";
+  }
+
+  ctx.fillText(title, canvas.width / 2, canvas.height / 2 - 80);
 
   ctx.fillStyle = "white";
   ctx.font = isPortrait ? "22px Arial" : "30px Arial";
 
-  if (crashReason === "MARKIERUNG ÜBERFAHREN!") {
-
-  ctx.fillText(
-    "Du hast die Begrenzung",
-    canvas.width / 2,
-    canvas.height / 2 - 20
-  );
-
-  ctx.fillText(
-    "der Aufgabe überfahren",
-    canvas.width / 2,
-    canvas.height / 2 + 20
-  );
-
-}
-else if (crashReason === "BEREICH VERLASSEN!") {
-
-  ctx.fillText(
-    "Du hast den zulässigen",
-    canvas.width / 2,
-    canvas.height / 2 - 20
-  );
-
-  ctx.fillText(
-    "Aufgabenbereich verlassen",
-    canvas.width / 2,
-    canvas.height / 2 + 20
-  );
-
-}
-else if (crashReason === "ZU VIELE KORREKTURZÜGE!") {
-
-  ctx.fillText(
-    "Mehr als 4 Korrekturzüge",
-    canvas.width / 2,
-    canvas.height / 2 - 20
-  );
-
-  ctx.fillText(
-    "verwendet",
-    canvas.width / 2,
-    canvas.height / 2 + 20
-  );
-
-}
-
-else {
-
-  ctx.fillText(
-    "LKW hat den",
-    canvas.width / 2,
-    canvas.height / 2 - 20
-  );
-
-  ctx.fillText(
-    "Anhänger berührt",
-    canvas.width / 2,
-    canvas.height / 2 + 20
-  );
-
-}
-
+  if (crashReason === "BEREICH VERLASSEN!") {
+    ctx.fillText("Du hast den zulässigen", canvas.width / 2, canvas.height / 2 - 20);
+    ctx.fillText("Aufgabenbereich verlassen", canvas.width / 2, canvas.height / 2 + 20);
+  } else if (crashReason === "MARKIERUNG ÜBERFAHREN!") {
+    ctx.fillText("Du hast die Begrenzung", canvas.width / 2, canvas.height / 2 - 20);
+    ctx.fillText("der Aufgabe überfahren", canvas.width / 2, canvas.height / 2 + 20);
+  } else if (crashReason === "ZU VIELE KORREKTURZÜGE!") {
+    ctx.fillText("Es sind maximal", canvas.width / 2, canvas.height / 2 - 20);
+    ctx.fillText(activeTask.maxCorrectionMoves + " Korrekturzüge erlaubt", canvas.width / 2, canvas.height / 2 + 20);
+  } else if (crashReason === "ANHÄNGER HAT RAMPE BERÜHRT") {
+    ctx.fillText("Anhänger hat", canvas.width / 2, canvas.height / 2 - 20);
+    ctx.fillText("Rampe berührt", canvas.width / 2, canvas.height / 2 + 20);
+  } else {
+    ctx.fillText("LKW, Anhänger oder Deichsel", canvas.width / 2, canvas.height / 2 - 20);
+    ctx.fillText("hat eine Kollision verursacht", canvas.width / 2, canvas.height / 2 + 20);
+  }
 
   ctx.textAlign = "left";
+}
+
+function drawSuccessOverlay() {
+  ctx.fillStyle = "rgba(0,0,0,0.55)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const isPortrait = canvas.height > canvas.width;
+
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#00ff44";
+  ctx.font = isPortrait ? "28px Arial" : "52px Arial";
+
+  ctx.fillText("GRUNDFAHRAUFGABE", canvas.width / 2, canvas.height / 2 - 60);
+  ctx.fillText("ABGESCHLOSSEN", canvas.width / 2, canvas.height / 2);
+
+  ctx.fillStyle = "white";
+  ctx.font = isPortrait ? "18px Arial" : "28px Arial";
+
+  const usedTime = finishTime ? formatTime(finishTime - startTime) : "00:00";
+
+  ctx.fillText("Gratulation", canvas.width / 2, canvas.height / 2 + 50);
+  ctx.fillText("Zeit: " + usedTime, canvas.width / 2, canvas.height / 2 + 95);
+
+  ctx.textAlign = "left";
+}
+
+/* =========================================================
+   17 INTRO
+   ========================================================= */
+
+function startIntro() {
+  introActive = true;
+  introStartTime = performance.now();
+  followTruck = false;
+
+  introBox.textContent = activeTask.introText;
+  introBox.style.display = "block";
+  centerCameraOnHitch();
+}
+
+function updateIntro() {
+  if (!introActive || !activeTask.introEnabled) return;
+
+  const elapsed = performance.now() - introStartTime;
+  const hitchPoint = getHitchPoint();
+
+  const target = {
+    x: activeTask.introRampX,
+    y: (activeTask.introRampTopY + activeTask.introRampBottomY) / 2
+  };
+
+  const holdStart = 1000;
+  const moveToRamp = 1000;
+  const holdRamp = 1000;
+  const moveBack = 650;
+
+  const total = holdStart + moveToRamp + holdRamp + moveBack;
+
+  if (elapsed < holdStart) return;
+
+  if (elapsed < holdStart + moveToRamp) {
+    const t = easeInOut((elapsed - holdStart) / moveToRamp);
+    camera.x = hitchPoint.x + (target.x - hitchPoint.x) * t;
+    camera.y = hitchPoint.y + (target.y - hitchPoint.y) * t;
+    return;
+  }
+
+  if (elapsed < holdStart + moveToRamp + holdRamp) {
+    camera.x = target.x;
+    camera.y = target.y;
+    return;
+  }
+
+  if (elapsed < total) {
+    const t = easeInOut((elapsed - holdStart - moveToRamp - holdRamp) / moveBack);
+    camera.x = target.x + (hitchPoint.x - target.x) * t;
+    camera.y = target.y + (hitchPoint.y - target.y) * t;
+    return;
+  }
+
+  introActive = false;
+  introBox.style.display = "none";
+  followTruck = true;
+
+}
+
+/* =========================================================
+   18 KLEINE HILFSFUNKTIONEN
+   ========================================================= */
+
+function updateGearButtons() {
+  gearRBtn.classList.toggle("activeGear", gear === "R");
+  gearDBtn.classList.toggle("activeGear", gear === "D");
+}
+
+function updateWheelVisual() {
+  steeringWheelImg.style.transform = "rotate(" + wheelAngle + "deg)";
+
+  steeringValue = wheelAngle / GLOBAL.maxWheelAngle;
+
+  if (truck) {
+    truck.steeringAngle = steeringValue * GLOBAL.steeringFactor;
+  }
+
+  steerDisplay.textContent = "Lenkrad: " + Math.round(wheelAngle) + "°";
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function normalizeAngle(angle) {
+  while (angle > Math.PI) angle -= Math.PI * 2;
+  while (angle < -Math.PI) angle += Math.PI * 2;
+  return angle;
+}
+
+function easeInOut(t) {
+  return t < 0.5
+    ? 2 * t * t
+    : 1 - Math.pow(-2 * t + 2, 2) / 2;
 }
 
 function formatTime(ms) {
@@ -4461,200 +2382,20 @@ function formatTime(ms) {
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
 
-  return (
-    String(minutes).padStart(2, "0") +
-    ":" +
-    String(seconds).padStart(2, "0")
-  );
+  return String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
 }
 
-function drawSuccessOverlay() {
-
-  ctx.fillStyle = "rgba(0,0,0,0.55)";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  const isPortrait = canvas.height > canvas.width;
-
-  ctx.textAlign = "center";
-
-  ctx.fillStyle = "#00ff44";
-
-  ctx.font = isPortrait ? "28px Arial" : "52px Arial";
-
-  ctx.fillText(
-    "GRUNDFAHRAUFGABE",
-    canvas.width / 2,
-    canvas.height / 2 - 60
-  );
-
-  ctx.fillText(
-    "ABGESCHLOSSEN",
-    canvas.width / 2,
-    canvas.height / 2
-  );
-
-  ctx.fillStyle = "white";
-
-  ctx.font = isPortrait ? "18px Arial" : "28px Arial";
-
-  ctx.fillText(
-    "Gratulation",
-    canvas.width / 2,
-    canvas.height / 2 + 50
-  );
-const usedTime = finishTime
-  ? formatTime(finishTime - startTime)
-  : "00:00";
-
-ctx.fillText(
-  "Zeit: " + usedTime,
-  canvas.width / 2,
-  canvas.height / 2 + 95
-);
-  ctx.textAlign = "left";
-}
-function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
- if (followTruck) {
-
-  const hitchX =
-    truck.x - Math.cos(truck.angle) * truck.length / 2;
-
-  const hitchY =
-    truck.y - Math.sin(truck.angle) * truck.length / 2;
-
-  camera.x = hitchX;
-  camera.y = hitchY + 100;
-}
-
-  ctx.save();
-
-  ctx.translate(canvas.width / 2, canvas.height / 2);
-  ctx.scale(camera.zoom, camera.zoom);
-  ctx.translate(-camera.x, -camera.y);
-
-drawRoad();
-drawRoadTriggerDebug();
-
-
-
-
-
-
-ctx.save();
-
-ctx.strokeStyle = "white";
-ctx.lineWidth = 4;
-
-ctx.beginPath();
-ctx.moveTo(1100, 975);
-ctx.lineTo(2700, 975);
-
-ctx.stroke();
-
-ctx.restore();
-
-
-
-ctx.strokeStyle = "white";
-ctx.lineWidth = 4;
-
-// Obere Linie
-ctx.beginPath();
-ctx.moveTo(1100, 975);
-ctx.lineTo(2700, 975);
-ctx.stroke();
-
-// Linke waagerechte Linie
-ctx.beginPath();
-ctx.moveTo(1450, 1365);
-ctx.lineTo(1100, 1365);
-ctx.stroke();
-
-// Rechte waagerechte Linie
-ctx.beginPath();
-ctx.moveTo(2280, 1365);
-ctx.lineTo(2700, 1365);
-ctx.stroke();
-
-drawTrailer();
-drawDrawbar();
-drawTruck();
-
-  ctx.restore();
-
-
-
-
-  drawHud();
-
-if (crashed) {
-  drawCollisionOverlay();
-}
-
-if (taskCompleted) {
-  drawSuccessOverlay();
-}
-}
+/* =========================================================
+   19 HAUPTSCHLEIFE
+   ========================================================= */
 
 function loop() {
-  update();
-  draw();
+  updateGame();
+  drawGame();
   requestAnimationFrame(loop);
 }
 
 loop();
-</script>
-
-</body>
-</html>
-  </template>
-
-<script>
-  const menuScreen = document.getElementById('menuScreen');
-  const gameScreen = document.getElementById('gameScreen');
-  const gameFrame = document.getElementById('gameFrame');
-  const backBtn = document.getElementById('backBtn');
-const fehlerGerade = document.getElementById("fehlerGerade");
-const fehlerUmkehren = document.getElementById("fehlerUmkehren");
-
-function showFehler(typ) {
-  menuScreen.style.display = "none";
-  gameScreen.style.display = "none";
-  backBtn.style.display = "none";
-
-  fehlerGerade.style.display = "none";
-  fehlerUmkehren.style.display = "none";
-
-  if (typ === "gerade") {
-    fehlerGerade.style.display = "flex";
-  }
-
-  if (typ === "umkehren") {
-    fehlerUmkehren.style.display = "flex";
-  }
-}
-
-  function startLevel(level) {
-    const tpl = document.getElementById('tpl-' + level);
-    if (!tpl) return;
-    menuScreen.style.display = 'none';
-    gameScreen.style.display = 'block';
-    backBtn.style.display = 'block';
-    gameFrame.srcdoc = tpl.innerHTML.trim();
-  }
-
-  function showMenu() {
-    gameFrame.srcdoc = '';
-    gameScreen.style.display = 'none';
-    menuScreen.style.display = 'flex';
-    backBtn.style.display = 'none';
-    fehlerGerade.style.display = "none";
-    fehlerUmkehren.style.display = "none";
-
-
-  }
 </script>
 </body>
 </html>
