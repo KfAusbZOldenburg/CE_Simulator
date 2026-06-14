@@ -556,6 +556,11 @@ const GLOBAL = {
 
   trailerLength: 260,
   trailerWidth: 90,
+
+  // Position des Drehschemels / Deichselanschlusses am Anhänger.
+  // Größerer Wert = Deichsel sitzt weiter hinten am Anhänger.
+  trailerFrontAxleInset: 30,
+
   drawbarLength: 100,
 
   rearAxleOffset: -95,
@@ -830,7 +835,7 @@ trailerImageRaw.onload = function () {
 };
 
 truckImageRaw.src = "fahrzeug_sprite_1.png";
-trailerImageRaw.src = "fahrzeug_sprite_2.png";
+trailerImageRaw.src = "fahrzeug_sprite_2.png?v=2";
 
 function prepareSprite(image, targetCanvas, targetCtx) {
   targetCanvas.width = image.width;
@@ -987,7 +992,7 @@ const randomYOffset =
 
 function setTrailerStartPositionBehindTruck(randomYOffset) {
   const hitchPoint = getHitchPoint();
-  const frontAxleOffset = trailer.length / 2 - 25;
+  const frontAxleOffset = trailer.length / 2 - GLOBAL.trailerFrontAxleInset;
 
   trailer.drawbarAngle = truck.angle;
   trailer.angle = truck.angle;
@@ -1349,7 +1354,7 @@ function updateTruckPhysics() {
 
 function updateTrailerPhysics() {
   const hitchPoint = getHitchPoint();
-  const frontAxleOffset = trailer.length / 2 - 25;
+  const frontAxleOffset = trailer.length / 2 - GLOBAL.trailerFrontAxleInset;
 
   const currentFrontX =
     trailer.x + Math.cos(trailer.angle) * frontAxleOffset;
@@ -1730,8 +1735,8 @@ function getCorners(obj) {
 function getDrawbarPolygon() {
   const hitchPoint = getHitchPoint();
 
-  const axleX = trailer.frontAxleX ?? trailer.x + Math.cos(trailer.angle) * (trailer.length / 2 - 25);
-  const axleY = trailer.frontAxleY ?? trailer.y + Math.sin(trailer.angle) * (trailer.length / 2 - 25);
+  const axleX = trailer.frontAxleX ?? trailer.x + Math.cos(trailer.angle) * (trailer.length / 2 - GLOBAL.trailerFrontAxleInset);
+  const axleY = trailer.frontAxleY ?? trailer.y + Math.sin(trailer.angle) * (trailer.length / 2 - GLOBAL.trailerFrontAxleInset);
 
   const width = GLOBAL.drawbarCollisionWidth;
 
@@ -1773,7 +1778,7 @@ function getWheelTriggerPoints() {
   points.push(localToWorld(trailer, -90, -trailer.width / 3 - 10));
   points.push(localToWorld(trailer, -90,  trailer.width / 3 + 10));
 
-  const frontAxleX = trailer.length / 2 - 25;
+  const frontAxleX = trailer.length / 2 - GLOBAL.trailerFrontAxleInset;
   const axleCenter = localToWorld(trailer, frontAxleX, 0);
 
   points.push({
@@ -2153,7 +2158,7 @@ function drawTrailer() {
   drawWheel(-90, -trailer.width / 3 - 10, 0);
   drawWheel(-90,  trailer.width / 3 + 10, 0);
 
-  const frontAxleX = trailer.length / 2 - 25;
+  const frontAxleX = trailer.length / 2 - GLOBAL.trailerFrontAxleInset;
   const axleAngle = trailer.drawbarAngle - trailer.angle;
 
   ctx.save();
@@ -2177,8 +2182,8 @@ function drawTrailer() {
 function drawDrawbar() {
   const hitchPoint = getHitchPoint();
 
-  const axleX = trailer.frontAxleX ?? trailer.x + Math.cos(trailer.angle) * (trailer.length / 2 - 25);
-  const axleY = trailer.frontAxleY ?? trailer.y + Math.sin(trailer.angle) * (trailer.length / 2 - 25);
+  const axleX = trailer.frontAxleX ?? trailer.x + Math.cos(trailer.angle) * (trailer.length / 2 - GLOBAL.trailerFrontAxleInset);
+  const axleY = trailer.frontAxleY ?? trailer.y + Math.sin(trailer.angle) * (trailer.length / 2 - GLOBAL.trailerFrontAxleInset);
 
   const pivotRadius = 19;
 
@@ -2272,10 +2277,15 @@ function drawSuccessOverlay() {
   ctx.fillStyle = "white";
   ctx.font = isPortrait ? "18px Arial" : "28px Arial";
 
-  const usedTime = finishTime ? formatTime(finishTime - startTime) : "00:00";
+ const usedMs = finishTime ? finishTime - startTime : 0;
+ const usedTime = formatTime(usedMs);
+ const score = calculateScore(usedMs, correctionMoves);
+ const alignmentBonus = calculateAlignmentBonus();
 
-  ctx.fillText("Gratulation", canvas.width / 2, canvas.height / 2 + 50);
-  ctx.fillText("Zeit: " + usedTime, canvas.width / 2, canvas.height / 2 + 95);
+ctx.fillText("Gratulation", canvas.width / 2, canvas.height / 2 + 40);
+ctx.fillText("Zeit: " + usedTime, canvas.width / 2, canvas.height / 2 + 85);
+ctx.fillText("Korrekturzüge: " + correctionMoves, canvas.width / 2, canvas.height / 2 + 130);
+ctx.fillText("Punkte: " + score, canvas.width / 2, canvas.height / 2 + 180);
 
   ctx.textAlign = "left";
 }
@@ -2375,6 +2385,42 @@ function easeInOut(t) {
   return t < 0.5
     ? 2 * t * t
     : 1 - Math.pow(-2 * t + 2, 2) / 2;
+}
+
+function calculateAlignmentBonus() {
+
+  if (activeTask.id === "umkehren") {
+
+    const truckError =
+      Math.abs(normalizeAngle(truck.angle - Math.PI));
+
+    const trailerError =
+      Math.abs(normalizeAngle(trailer.angle - Math.PI));
+
+    const truckPoints =
+      Math.max(0, 300 - truckError * 300);
+
+    const trailerPoints =
+      Math.max(0, 300 - trailerError * 300);
+
+    return Math.round(truckPoints + trailerPoints);
+  }
+
+  return 0;
+}
+function calculateScore(timeMs, correctionMoves) {
+  const seconds = Math.floor(timeMs / 1000);
+
+  const basePoints = 1500;
+  const timePenalty = seconds * 5;
+  const correctionPenalty = correctionMoves * 150;
+
+  const alignmentBonus = calculateAlignmentBonus();
+
+  return Math.max(
+    0,
+    Math.round(basePoints - timePenalty - correctionPenalty + alignmentBonus)
+  );
 }
 
 function formatTime(ms) {
