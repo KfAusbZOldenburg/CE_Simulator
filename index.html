@@ -105,6 +105,12 @@ h1 {
   color: white;
 }
 
+.highscoreMini {
+  min-height: 42px !important;
+  padding: 8px 12px !important;
+  font-size: 14px !important;
+}
+
 .menuButton {
   background: #6E8B3D;
 }
@@ -178,6 +184,8 @@ h1 {
   font-weight: bold;
 }
 
+
+
 #restartBtn {
   display: none;
   position: fixed;
@@ -189,6 +197,133 @@ h1 {
   z-index: 1000;
   background: #1f8f3a;
   color: white;
+  font-weight: bold;
+}
+
+#openHighscoreEntryBtn {
+  display: none;
+  position: fixed;
+  top: 75%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 22px;
+  padding: 16px 28px;
+  z-index: 1001;
+  background: #d99b00;
+  color: white;
+  font-weight: bold;
+}
+
+#successPanel {
+  display: none;
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1001;
+  width: min(92vw, 620px);
+  max-height: 72vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 22px;
+  background: rgba(0,0,0,0.88);
+  color: white;
+  border-radius: 18px;
+  text-align: center;
+}
+
+#successPanel h2 {
+  margin: 0 0 14px 0;
+  color: #00ff44;
+  font-size: 28px;
+}
+
+#successDetails {
+  font-size: 20px;
+  line-height: 1.65;
+}
+
+.successButtonRow {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+#highscorePanel {
+  display: none;
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1002;
+  width: min(92vw, 520px);
+  max-height: 82vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 18px;
+  background: rgba(0,0,0,0.88);
+  color: white;
+  border-radius: 16px;
+  box-shadow: 0 0 25px rgba(0,0,0,0.7);
+  text-align: center;
+}
+
+#highscorePanel h3 {
+  margin: 0 0 10px 0;
+  font-size: 24px;
+}
+
+#highscorePanel input {
+  width: 85%;
+  max-width: 320px;
+  margin: 10px 0;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  font-size: 18px;
+  text-align: center;
+}
+
+.highscoreButtonRow {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 10px 0 14px 0;
+}
+
+.highscoreButtonRow button {
+  font-size: 16px;
+  padding: 10px 14px;
+}
+
+#highscoreStatus {
+  min-height: 22px;
+  font-size: 14px;
+  opacity: 0.9;
+  margin: 6px 0;
+}
+
+#highscoreList {
+  margin-top: 10px;
+  text-align: left;
+}
+
+.highscoreRow {
+  display: grid;
+  grid-template-columns: 42px 1fr 78px 70px;
+  gap: 6px;
+  align-items: center;
+  padding: 7px 6px;
+  border-bottom: 1px solid rgba(255,255,255,0.16);
+  font-size: 15px;
+}
+
+.highscoreRow.ownScore {
+  background: rgba(0, 255, 68, 0.16);
+  border-radius: 8px;
+  color: #aaffaa;
   font-weight: bold;
 }
 
@@ -228,6 +363,7 @@ h1 {
   font-family: monospace;
 }
 /*
+
 
 #introBox {
   position: fixed;
@@ -457,8 +593,14 @@ h1 {
         </button>
         <button class="infoButton" id="fehlerUmkehrenBtn">Fehlerbewertung</button>
       </div>
-    </div>
+<div class="menuRow">
+<button class="infoButton highscoreMini" id="showHighscoreGeradeBtn">
+  🏆 Rampe
+</button>
 
+<button class="infoButton highscoreMini" id="showHighscoreUmkehrenBtn">
+  🏆 Umkehren
+</button>
     <div class="credits">Entwickelt von KfAusbZ Oldenburg<br>© HptFw Lang</div>
   </div>
 </main>
@@ -508,7 +650,40 @@ h1 {
   <div id="correctionBox" class="hudBox">Korrekturzüge: 0 / 4</div>
   <div id="introBox">Fahre an die rot markierte Rampe</div>
 
+<div id="successPanel">
+  <h2>GRUNDFAHRAUFGABE ABGESCHLOSSEN</h2>
+  <div id="successDetails"></div>
+  <div class="successButtonRow">
+    <button id="successHighscoreBtn">Highscore eintragen</button>
+    <button id="successRestartBtn">Neu starten</button>
+    <button id="successMenuBtn">Menü</button>
+  </div>
+</div>
+
+  <button id="openHighscoreEntryBtn">Highscore eintragen</button>
   <button id="restartBtn">Neu starten</button>
+  <div id="highscorePanel">
+    <h3 id="highscoreTitle">Highscore</h3>
+    <div id="highscoreResultText">Punkte: 0</div>
+
+    <div id="nameEntryBox">
+      <input id="playerNameInput" maxlength="20" placeholder="Name eingeben">
+      <div class="highscoreButtonRow">
+        <button id="saveHighscoreBtn">Eintragen</button>
+        <button id="showOnlyHighscoreBtn">Nur ansehen</button>
+        <button id="closeHighscoreBtn">Schließen</button>
+      </div>
+    </div>
+
+    <div id="viewOnlyBox" style="display:none;">
+      <div class="highscoreButtonRow">
+        <button id="closeHighscoreViewBtn">Schließen</button>
+      </div>
+    </div>
+
+    <div id="highscoreStatus"></div>
+    <div id="highscoreList"></div>
+  </div>
 
   <div class="controls">
     <div class="steeringPanel">
@@ -546,6 +721,8 @@ h1 {
    01 GLOBALE EINSTELLUNGEN
    Diese Werte gelten für beide Aufgaben.
    ========================================================= */
+
+const HIGHSCORE_URL = "https://script.google.com/macros/s/AKfycbxw2n0pBykM-rJBe-d1gXA0NEr89MIgSWk1F-o_Sm5ORRvJX2rtEW6hqKQNZM8CZKOZWw/exec";
 
 const GLOBAL = {
   worldWidth: 3500,
@@ -725,6 +902,12 @@ const ctx = canvas.getContext("2d");
 
 const backBtn = document.getElementById("backBtn");
 const restartBtn = document.getElementById("restartBtn");
+const openHighscoreEntryBtn = document.getElementById("openHighscoreEntryBtn");
+const successPanel = document.getElementById("successPanel");
+const successDetails = document.getElementById("successDetails");
+const successHighscoreBtn = document.getElementById("successHighscoreBtn");
+const successRestartBtn = document.getElementById("successRestartBtn");
+const successMenuBtn = document.getElementById("successMenuBtn");
 
 const gameTitle = document.getElementById("gameTitle");
 const gameSubtitle = document.getElementById("gameSubtitle");
@@ -750,6 +933,19 @@ const speedSlider = document.getElementById("speedSlider");
 const speedDisplay = document.getElementById("speedDisplay");
 const followBtn = document.getElementById("followBtn");
 const guideBtn = document.getElementById("guideBtn");
+
+const highscorePanel = document.getElementById("highscorePanel");
+const highscoreTitle = document.getElementById("highscoreTitle");
+const nameEntryBox = document.getElementById("nameEntryBox");
+const viewOnlyBox = document.getElementById("viewOnlyBox");
+const highscoreResultText = document.getElementById("highscoreResultText");
+const playerNameInput = document.getElementById("playerNameInput");
+const saveHighscoreBtn = document.getElementById("saveHighscoreBtn");
+const closeHighscoreBtn = document.getElementById("closeHighscoreBtn");
+const showOnlyHighscoreBtn = document.getElementById("showOnlyHighscoreBtn");
+const closeHighscoreViewBtn = document.getElementById("closeHighscoreViewBtn");
+const highscoreStatus = document.getElementById("highscoreStatus");
+const highscoreList = document.getElementById("highscoreList");
 
 /* =========================================================
    05 SPIELZUSTAND
@@ -778,6 +974,8 @@ let maxSpeed = GLOBAL.startMaxSpeed;
 let gear = "D";
 let gasPressed = false;
 let brakePressed = false;
+let gasPhases = 0;
+let gasWasPressed = false;
 
 let wheelAngle = 0;
 let wheelDragging = false;
@@ -805,6 +1003,31 @@ const camera = {
 
 const keys = {};
 let showReverseGuideLines = false;
+let lastResult = null;
+let highscoreAlreadyShown = false;
+let highscoreViewTaskId = null;
+let straightSamples = 0;
+let straightErrorSum = 0;
+let straightTargetY = null;
+document.getElementById("showHighscoreGeradeBtn").addEventListener("click", function () {
+  showHighscoreViewer("gerade");
+});
+
+document.getElementById("showHighscoreUmkehrenBtn").addEventListener("click", function () {
+  showHighscoreViewer("umkehren");
+});
+showOnlyHighscoreBtn.addEventListener("click", function () {
+  if (!lastResult) return;
+  showHighscoreViewer(lastResult.aufgabe);
+});
+
+closeHighscoreViewBtn.addEventListener("click", function () {
+  highscorePanel.style.display = "none";
+  openHighscoreEntryBtn.style.display = "none";
+  if (!gameRunning) {
+    menuScreen.style.display = "flex";
+  }
+});
 
 /* =========================================================
    06 BILDER LADEN
@@ -879,7 +1102,8 @@ function startLevel(taskId) {
   fehlerUmkehren.style.display = "none";
   gameScreen.style.display = "block";
   backBtn.style.display = "block";
-
+  correctionBox.style.display = "block";
+  coordBox.style.display = "block";
   gameTitle.textContent = activeTask.title;
   gameSubtitle.textContent = activeTask.subtitle;
 
@@ -918,12 +1142,26 @@ function showFehler(taskId) {
    ========================================================= */
 
 function resetGame() {
+
   crashed = false;
   crashReason = "";
   taskCompleted = false;
 
   startTime = Date.now();
   finishTime = null;
+
+  lastResult = null;
+  highscoreAlreadyShown = false;
+  highscorePanel.style.display = "none";
+  successPanel.style.display = "none";
+  highscoreStatus.textContent = "";
+  highscoreList.innerHTML = "";
+straightSamples = 0;
+straightErrorSum = 0;
+straightTargetY = null;
+
+  gasPhases = 0;
+  gasWasPressed = false;
 
   correctionMoves = 0;
   correctionCounterStarted = false;
@@ -989,7 +1227,6 @@ const randomYOffset =
     introBox.style.display = "none";
   }
 }
-
 function setTrailerStartPositionBehindTruck(randomYOffset) {
   const hitchPoint = getHitchPoint();
   const frontAxleOffset = trailer.length / 2 - GLOBAL.trailerFrontAxleInset;
@@ -1035,7 +1272,25 @@ for (const btn of document.querySelectorAll(".backToMenuBtn")) {
 }
 
 backBtn.addEventListener("click", showMenu);
+
 restartBtn.addEventListener("click", resetGame);
+openHighscoreEntryBtn.addEventListener("click", function () {
+  showHighscoreEntryPanel();
+});
+successHighscoreBtn.addEventListener("click", function () {
+  showHighscoreEntryPanel();
+});
+
+successRestartBtn.addEventListener("click", resetGame);
+successMenuBtn.addEventListener("click", showMenu);
+
+saveHighscoreBtn.addEventListener("click", function () {
+  saveHighscore();
+});
+
+closeHighscoreBtn.addEventListener("click", function () {
+  highscorePanel.style.display = "none";
+});
 
 function holdButton(button, setter) {
   button.addEventListener("mousedown", function () { setter(true); });
@@ -1100,6 +1355,18 @@ guideBtn.addEventListener("click", function () {
 });
 
 document.addEventListener("keydown", function (e) {
+
+  if (
+
+    document.activeElement === playerNameInput
+
+  ) {
+
+    return;
+
+  }
+
+  keys[e.key.toLowerCase()] = true;
   keys[e.key.toLowerCase()] = true;
   if (e.key.toLowerCase() === "h") {
     showReverseGuideLines = !showReverseGuideLines;
@@ -1111,6 +1378,13 @@ document.addEventListener("keydown", function (e) {
 });
 
 document.addEventListener("keyup", function (e) {
+
+  if (
+    document.activeElement === playerNameInput
+  ) {
+    return;
+  }
+
   keys[e.key.toLowerCase()] = false;
 });
 
@@ -1269,6 +1543,11 @@ canvas.addEventListener("touchend", function (e) {
    ========================================================= */
 
 function updateGame() {
+if (gasPressed && !gasWasPressed) {
+  gasPhases++;
+}
+
+gasWasPressed = gasPressed;
   if (!gameRunning || !activeTask || !truck || !trailer) return;
   if (crashed || taskCompleted) return;
 
@@ -1282,6 +1561,7 @@ function updateGame() {
   updateTruckPhysics();
   updateTrailerPhysics();
   updateCorrectionCounter();
+  updateStraightnessTracker();
   checkCrashAndSuccess();
 }
 
@@ -1429,7 +1709,7 @@ function updateCorrectionCounter() {
    ========================================================= */
 
 function checkCrashAndSuccess() {
-  if (crashed) return;
+  if (crashed || taskCompleted) return;
 
   if (checkWorldBounds()) {
     crash("BEREICH VERLASSEN!");
@@ -1465,8 +1745,41 @@ function checkCrashAndSuccess() {
     taskCompleted = true;
     finishTime = Date.now();
     truck.speed = 0;
-    restartBtn.style.display = "block";
+
+    restartBtn.style.display = "none";
+    openHighscoreEntryBtn.style.display = "none";
     controls.style.display = "none";
+
+    const usedMs = finishTime - startTime;
+
+    let score = 0;
+
+    try {
+      score = calculateScore(usedMs, correctionMoves);
+    } catch (error) {
+      console.error("Fehler bei Punkteberechnung:", error);
+
+      score = Math.max(
+        0,
+        1500 - Math.floor(usedMs / 1000) * 5 - correctionMoves * 150
+      );
+    }
+
+    lastResult = {
+      aufgabe: activeTask.id,
+      punkte: score,
+      zeitMs: usedMs,
+      zeitText: formatTime(usedMs),
+      korrekturzuege: correctionMoves
+    };
+
+successDetails.innerHTML =
+  "<p><b>Zeit:</b> " + lastResult.zeitText + "</p>" +
+  "<p><b>Korrekturzüge:</b> " + lastResult.korrekturzuege + "</p>" +
+  "<p><b>Punkte:</b> " + lastResult.punkte + "</p>";
+
+successPanel.style.display = "block";
+
   }
 }
 
@@ -1475,6 +1788,7 @@ function crash(reason) {
   crashReason = reason;
   truck.speed = 0;
   restartBtn.style.display = "block";
+  openHighscoreEntryBtn.style.display = "none";
   controls.style.display = "none";
 }
 
@@ -1986,9 +2300,7 @@ function drawGame() {
     drawCrashOverlay();
   }
 
-  if (taskCompleted) {
-    drawSuccessOverlay();
-  }
+ 
 }
 
 function drawRoad() {
@@ -2279,14 +2591,16 @@ function drawSuccessOverlay() {
 
  const usedMs = finishTime ? finishTime - startTime : 0;
  const usedTime = formatTime(usedMs);
- const score = calculateScore(usedMs, correctionMoves);
- const alignmentBonus = calculateAlignmentBonus();
+ const score = lastResult
+  ? lastResult.punkte
+  : Math.max(0, 1500 - Math.floor(usedMs / 1000) * 5 - correctionMoves * 150);
 
 ctx.fillText("Gratulation", canvas.width / 2, canvas.height / 2 + 40);
 ctx.fillText("Zeit: " + usedTime, canvas.width / 2, canvas.height / 2 + 85);
 ctx.fillText("Korrekturzüge: " + correctionMoves, canvas.width / 2, canvas.height / 2 + 130);
 ctx.fillText("Punkte: " + score, canvas.width / 2, canvas.height / 2 + 180);
 
+  // Removed automatic highscore panel opening.
   ctx.textAlign = "left";
 }
 
@@ -2387,6 +2701,48 @@ function easeInOut(t) {
     : 1 - Math.pow(-2 * t + 2, 2) / 2;
 }
 
+function updateStraightnessTracker() {
+  if (!activeTask || activeTask.id !== "gerade") return;
+  if (!trailer || !truck) return;
+  if (truck.speed >= -0.05) return;
+
+  const rear = getTrailerRearCenter();
+
+  if (straightTargetY === null) {
+    straightTargetY = rear.y;
+  }
+
+  const lateralError = Math.abs(rear.y - straightTargetY);
+
+  const trailerAngleError =
+    Math.abs(normalizeAngle(trailer.angle - Math.PI));
+
+  const truckAngleError =
+    Math.abs(normalizeAngle(truck.angle - Math.PI));
+
+  const error =
+    lateralError * 1.2 +
+    trailerAngleError * 180 +
+    truckAngleError * 80;
+
+  straightErrorSum += error;
+  straightSamples++;
+}
+
+function calculateStraightnessBonus() {
+  if (!activeTask || activeTask.id !== "gerade") return 0;
+  if (straightSamples <= 0) return 0;
+
+  const averageError = straightErrorSum / straightSamples;
+
+  const maxBonus = 300;
+
+  return Math.max(
+    0,
+    Math.round(maxBonus - averageError * 4)
+  );
+}
+
 function calculateAlignmentBonus() {
 
   if (activeTask.id === "umkehren") {
@@ -2408,19 +2764,42 @@ function calculateAlignmentBonus() {
 
   return 0;
 }
+
+function calculateFlowBonus() {
+
+  if (gasPhases <= 1) return 100;
+  if (gasPhases === 2) return 90;
+  if (gasPhases === 4) return 80;
+  if (gasPhases === 6) return 65;
+  if (gasPhases === 8) return 50;
+  if (gasPhases === 10) return 35;
+  if (gasPhases === 15) return 20;
+
+  return 0;
+}
+
 function calculateScore(timeMs, correctionMoves) {
   const seconds = Math.floor(timeMs / 1000);
 
-  const basePoints = 1500;
+  const basePoints = 2000;
   const timePenalty = seconds * 5;
   const correctionPenalty = correctionMoves * 150;
 
   const alignmentBonus = calculateAlignmentBonus();
+  const straightnessBonus = calculateStraightnessBonus();
+  const flowBonus = calculateFlowBonus();
 
-  return Math.max(
-    0,
-    Math.round(basePoints - timePenalty - correctionPenalty + alignmentBonus)
-  );
+return Math.max(
+  0,
+  Math.round(
+    basePoints -
+    timePenalty -
+    correctionPenalty +
+    alignmentBonus +
+    straightnessBonus +
+    flowBonus
+  )
+);
 }
 
 function formatTime(ms) {
@@ -2436,12 +2815,222 @@ function formatTime(ms) {
    ========================================================= */
 
 function loop() {
-  updateGame();
-  drawGame();
+  try {
+    updateGame();
+    drawGame();
+  } catch (error) {
+    console.error("Spiel-Fehler:", error);
+
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "red";
+    ctx.font = "22px Arial";
+    ctx.fillText("SPIELFEHLER", 30, 60);
+    ctx.fillStyle = "white";
+    ctx.font = "16px Arial";
+    ctx.fillText(String(error.message || error), 30, 95);
+  }
+
   requestAnimationFrame(loop);
 }
 
 loop();
+
+function showHighscoreEntryPanel() {
+  if (!lastResult) return;
+
+  highscoreViewTaskId = lastResult.aufgabe;
+
+  highscorePanel.style.display = "block";
+  playerNameInput.value = "";
+    localStorage.getItem("playerName") || "";
+
+  setTimeout(function () {
+  playerNameInput.focus();
+  playerNameInput.click();
+  }, 100);
+  openHighscoreEntryBtn.style.display = "none";
+  highscoreTitle.textContent = "Highscore eintragen";
+  nameEntryBox.style.display = "block";
+  viewOnlyBox.style.display = "none";
+
+  highscoreResultText.style.display = "block";
+  highscoreResultText.textContent =
+    "Punkte: " + lastResult.punkte +
+    " | Zeit: " + lastResult.zeitText +
+    " | Korrekturzüge: " + lastResult.korrekturzuege;
+
+  highscoreStatus.textContent = "Trage deinen Namen ein.";
+  highscoreList.innerHTML = "";
+  loadHighscores(playerNameInput.value.trim());
+}
+
+function showHighscoreViewer(taskId) {
+
+
+
+  console.log("Highscore Viewer:", taskId);
+
+gameScreen.style.display = "block";
+menuScreen.style.display = "none";
+backBtn.style.display = "none";
+controls.style.display = "none";
+correctionBox.style.display = "none";
+coordBox.style.display = "none";
+
+  highscoreViewTaskId = taskId;
+
+
+
+  highscorePanel.style.display = "block";
+  highscoreTitle.textContent = taskId === "gerade"
+    ? "Highscore 20 m Rampe"
+    : "Highscore Umkehren";
+
+  nameEntryBox.style.display = "none";
+  viewOnlyBox.style.display = "block";
+  highscoreResultText.style.display = "none";
+
+  highscoreStatus.textContent = "Bestenliste wird geladen...";
+  highscoreList.innerHTML = "";
+
+  loadHighscores("");
+}
+
+function saveHighscore() {
+  if (!lastResult) return;
+
+  const name = playerNameInput.value.trim().slice(0, 20);
+
+  localStorage.setItem("playerName", name);
+
+
+  if (!name) {
+    highscoreStatus.textContent = "Bitte einen Namen eingeben.";
+    return;
+  }
+
+  saveHighscoreBtn.disabled = true;
+  highscoreStatus.textContent = "Highscore wird gespeichert...";
+
+  fetch(HIGHSCORE_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8"
+    },
+    body: JSON.stringify({
+      name: name,
+      aufgabe: lastResult.aufgabe,
+      punkte: lastResult.punkte,
+      zeitMs: lastResult.zeitMs,
+      zeitText: lastResult.zeitText,
+      korrekturzuege: lastResult.korrekturzuege
+    })
+  })
+  .then(function () {
+    highscoreStatus.textContent = "Gesendet. Bestenliste wird aktualisiert...";
+
+    setTimeout(function () {
+      loadHighscores(name);
+    }, 1500);
+  })
+  .catch(function (error) {
+    console.error("Highscore speichern fehlgeschlagen:", error);
+    highscoreStatus.textContent = "Speichern fehlgeschlagen.";
+  })
+  .finally(function () {
+    saveHighscoreBtn.disabled = false;
+  });
+}
+function loadHighscores(ownName) {
+  const taskId = highscoreViewTaskId || (lastResult ? lastResult.aufgabe : null);
+  if (!taskId) return Promise.resolve();
+
+  highscoreStatus.textContent = "Bestenliste wird geladen...";
+
+  return new Promise(function (resolve) {
+    const callbackName = "highscoreCallback_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
+    const script = document.createElement("script");
+
+    const cleanup = function () {
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+      delete window[callbackName];
+    };
+
+    window[callbackName] = function (list) {
+      cleanup();
+      renderHighscores(list, ownName);
+      highscoreStatus.textContent = "";
+      resolve();
+    };
+
+    script.onerror = function () {
+      cleanup();
+      highscoreStatus.textContent = "Bestenliste konnte nicht geladen werden.";
+      resolve();
+    };
+
+    script.src = HIGHSCORE_URL +
+      "?aufgabe=" + encodeURIComponent(taskId) +
+      "&callback=" + encodeURIComponent(callbackName) +
+      "&t=" + Date.now();
+
+    document.body.appendChild(script);
+  });
+}
+
+function renderHighscores(list, ownName) {
+  highscoreList.innerHTML = "";
+
+  if (!Array.isArray(list) || list.length === 0) {
+    highscoreList.textContent = "Noch keine Einträge vorhanden.";
+    return;
+  }
+
+  const normalizedOwnName = String(ownName || "").trim().toLowerCase();
+  let rowsToShow = list.slice(0, 10);
+  let ownIndex = -1;
+
+  if (normalizedOwnName) {
+    ownIndex = list.findIndex(function (entry) {
+      return String(entry.name || "").trim().toLowerCase() === normalizedOwnName;
+    });
+
+    if (ownIndex >= 10) {
+      rowsToShow = list.slice(0, 9).concat([list[ownIndex]]);
+    }
+  }
+
+  rowsToShow.forEach(function (entry) {
+    const realRank = list.indexOf(entry) + 1;
+    const isOwn = normalizedOwnName &&
+      String(entry.name || "").trim().toLowerCase() === normalizedOwnName;
+
+    const row = document.createElement("div");
+    row.className = "highscoreRow" + (isOwn ? " ownScore" : "");
+
+    row.innerHTML =
+      "<span>#" + realRank + "</span>" +
+      "<span>" + escapeHtml(entry.name) + "</span>" +
+      "<span>" + Number(entry.punkte) + " P</span>" +
+      "<span>" + escapeHtml(entry.zeitText) + "</span>";
+
+    highscoreList.appendChild(row);
+  });
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 </script>
 </body>
 </html>
