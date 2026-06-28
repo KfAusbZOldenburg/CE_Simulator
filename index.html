@@ -1630,7 +1630,7 @@ canvas.addEventListener("touchstart", function (e) {
 }, { passive: false });
 
 canvas.addEventListener("touchmove", function (e) {
-  if (e.touches.length === 1 && frontViewWindow.dragging) {
+  if (e.touches.length === 1 && (frontViewWindow.dragging || frontViewWindow.resizing)) {
     e.preventDefault();
     updateFrontViewDrag(e.touches[0].clientX, e.touches[0].clientY);
     return;
@@ -2866,8 +2866,8 @@ function drawFrontViewResizeHandles(x, y, w, h) {
   const fillNormal = "rgba(0,0,0,0.92)";
   const fillActive = "rgba(0,0,0,0.98)";
   const stroke = "rgba(255,255,255,0.72)";
-  const size = 15;
-  const gap = 3;
+  const size = 7;
+  const gap = 2;
 
   function drawTri(points, fill) {
     ctx.beginPath();
