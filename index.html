@@ -4549,10 +4549,22 @@ function renderHighscores(list, ownName) {
       "<span>#" + realRank + "</span>" +
       "<span>" + escapeHtml(entry.name) + "</span>" +
       "<span>" + Number(entry.punkte) + " P</span>" +
-      "<span>" + escapeHtml(entry.zeitText) + "</span>";
+      "<span>" + escapeHtml(formatHighscoreTime(entry)) + "</span>";
 
     highscoreList.appendChild(row);
   });
+}
+
+function formatHighscoreTime(entry) {
+  if (entry && typeof entry.zeitText === "string" && /^\d{2}:\d{2}$/.test(entry.zeitText)) {
+    return entry.zeitText;
+  }
+
+  if (entry && typeof entry.zeitMs !== "undefined" && !isNaN(Number(entry.zeitMs))) {
+    return formatTime(Number(entry.zeitMs));
+  }
+
+  return "--:--";
 }
 
 function openBugReportPanel() {
