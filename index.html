@@ -1540,7 +1540,9 @@ canvas.addEventListener("contextmenu", function (e) {
 });
 
 canvas.addEventListener("mousedown", function (e) {
-  if (handleFrontViewPointerDown(e.clientX, e.clientY)) {
+  // Frontansicht nur mit linker Maustaste greifen.
+  // Rechte Maustaste bleibt für die freie Kamera/Umsehen reserviert.
+  if (e.button === 0 && handleFrontViewPointerDown(e.clientX, e.clientY, "mouse")) {
     e.preventDefault();
     return;
   }
@@ -1606,7 +1608,7 @@ canvas.addEventListener("wheel", function (e) {
 canvas.addEventListener("touchstart", function (e) {
   if (e.touches.length === 1) {
     const touch = e.touches[0];
-    if (handleFrontViewPointerDown(touch.clientX, touch.clientY)) {
+    if (handleFrontViewPointerDown(touch.clientX, touch.clientY, "touch")) {
       e.preventDefault();
       draggingMap = false;
       return;
@@ -2824,10 +2826,13 @@ function pointInRect(px, py, rect) {
 
 // Liefert für jede Ecke das rechtwinklige Dreieck (Anfasser), das andeutet,
 // dass das Fenster größenverstellbar ist.
-function getFrontViewResizeCorners() {
+function getFrontViewResizeCorners(inputType) {
   if (frontViewWindow.x === null || frontViewWindow.y === null) return [];
 
+  // Sichtbare Pfeile bleiben wie bisher klein.
+  // Nur der unsichtbare Trefferbereich wird auf Touch-Geräten größer.
   const s = FRONT_VIEW_HANDLE_SIZE;
+  const hitSize = inputType === "touch" ? 60 : FRONT_VIEW_HANDLE_SIZE;
   const x = frontViewWindow.x;
   const y = frontViewWindow.y;
   const w = frontViewWindow.w;
@@ -2836,22 +2841,22 @@ function getFrontViewResizeCorners() {
   return [
     {
       corner: "nw",
-      hit: { x: x, y: y, w: s, h: s },
+      hit: { x: x - hitSize / 2, y: y - hitSize / 2, w: hitSize, h: hitSize },
       tri: [{ x: x, y: y }, { x: x + s, y: y }, { x: x, y: y + s }]
     },
     {
       corner: "ne",
-      hit: { x: x + w - s, y: y, w: s, h: s },
+      hit: { x: x + w - hitSize / 2, y: y - hitSize / 2, w: hitSize, h: hitSize },
       tri: [{ x: x + w, y: y }, { x: x + w - s, y: y }, { x: x + w, y: y + s }]
     },
     {
       corner: "sw",
-      hit: { x: x, y: y + h - s, w: s, h: s },
+      hit: { x: x - hitSize / 2, y: y + h - hitSize / 2, w: hitSize, h: hitSize },
       tri: [{ x: x, y: y + h }, { x: x + s, y: y + h }, { x: x, y: y + h - s }]
     },
     {
       corner: "se",
-      hit: { x: x + w - s, y: y + h - s, w: s, h: s },
+      hit: { x: x + w - hitSize / 2, y: y + h - hitSize / 2, w: hitSize, h: hitSize },
       tri: [{ x: x + w, y: y + h }, { x: x + w - s, y: y + h }, { x: x + w, y: y + h - s }]
     }
   ];
@@ -2867,7 +2872,7 @@ function drawFrontViewResizeHandles(x, y, w, h) {
   const fillActive = "rgba(0,0,0,0.98)";
   const stroke = "rgba(255,255,255,0.72)";
   const size = 7;
-  const gap = 2;
+  const gap = 3;
 
   function drawTri(points, fill) {
     ctx.beginPath();
@@ -2911,7 +2916,7 @@ function drawFrontViewResizeHandles(x, y, w, h) {
   ctx.restore();
 }
 
-function handleFrontViewPointerDown(clientX, clientY) {
+function handleFrontViewPointerDown(clientX, clientY, inputType) {
   if (!showMirrorView || frontViewWindow.x === null || frontViewWindow.y === null) return false;
 
   const rect = {
@@ -2922,7 +2927,7 @@ function handleFrontViewPointerDown(clientX, clientY) {
   };
 
   // Eck-Anfasser zuerst prüfen (auch leicht außerhalb des Fensterrandes treffbar).
-  const corners = getFrontViewResizeCorners();
+  const corners = getFrontViewResizeCorners(inputType);
   for (const c of corners) {
     if (pointInRect(clientX, clientY, c.hit)) {
       frontViewWindow.resizing = true;
