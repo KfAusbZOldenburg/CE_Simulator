@@ -2791,19 +2791,28 @@ function drawFrontViewCloseButton(x, y, w, h) {
 
   ctx.save();
 
-  ctx.fillStyle = "rgba(170, 20, 20, 0.92)";
+  const cx = r.drawX + r.drawSize / 2;
+  const cy = r.drawY + r.drawSize / 2;
+  const radius = r.drawSize / 2;
+
   ctx.beginPath();
-  ctx.arc(r.x + r.w / 2, r.y + r.h / 2, r.w / 2, 0, Math.PI * 2);
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(190, 20, 20, 0.95)";
   ctx.fill();
 
   ctx.strokeStyle = "white";
   ctx.lineWidth = 2.2;
+  ctx.stroke();
+
+  ctx.strokeStyle = "white";
+  ctx.lineWidth = 3;
   ctx.lineCap = "round";
+
   ctx.beginPath();
-  ctx.moveTo(r.x + 8, r.y + 8);
-  ctx.lineTo(r.x + r.w - 8, r.y + r.h - 8);
-  ctx.moveTo(r.x + r.w - 8, r.y + 8);
-  ctx.lineTo(r.x + 8, r.y + r.h - 8);
+  ctx.moveTo(r.drawX + 8, r.drawY + 8);
+  ctx.lineTo(r.drawX + r.drawSize - 8, r.drawY + r.drawSize - 8);
+  ctx.moveTo(r.drawX + r.drawSize - 8, r.drawY + 8);
+  ctx.lineTo(r.drawX + 8, r.drawY + r.drawSize - 8);
   ctx.stroke();
 
   ctx.restore();
@@ -2813,14 +2822,19 @@ function getFrontViewCloseRect() {
   if (frontViewWindow.x === null || frontViewWindow.y === null) return null;
 
   const size = 20;
+  const hitSize = 50;
   const marginRight = 40;
 
   return {
-    x: frontViewWindow.x + frontViewWindow.w - size - marginRight,
-    y: frontViewWindow.y + 9,
-    w: size,
-    h: size
+    x: frontViewWindow.x + frontViewWindow.w - size - marginRight - (hitSize - size) / 2,
+    y: frontViewWindow.y + 9 - (hitSize - size) / 2,
+    w: hitSize,
+    h: hitSize,
+    drawX: frontViewWindow.x + frontViewWindow.w - size - marginRight,
+    drawY: frontViewWindow.y + 9,
+    drawSize: size
   };
+
 }
 
 function pointInRect(px, py, rect) {
@@ -2835,7 +2849,7 @@ function getFrontViewResizeCorners(inputType) {
   // Sichtbare Pfeile bleiben wie bisher klein.
   // Nur der unsichtbare Trefferbereich wird auf Touch-Geräten größer.
   const s = FRONT_VIEW_HANDLE_SIZE;
-  const hitSize = inputType === "touch" ? 60 : FRONT_VIEW_HANDLE_SIZE;
+  const hitSize = inputType === "touch" ? 80 : FRONT_VIEW_HANDLE_SIZE;
   const x = frontViewWindow.x;
   const y = frontViewWindow.y;
   const w = frontViewWindow.w;
