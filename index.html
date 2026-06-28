@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Grundfahraufgaben CE - v4</title>
+<title>Grundfahraufgaben CE</title>
 
 <style>
 /* =========================================================
    00 GRUNDLAYOUT
-   ========================================================= */
+   ============================ ============================== */
 html,
 body {
   margin: 0;
@@ -117,6 +117,29 @@ h1 {
 
 .infoButton {
   background: #374151;
+}
+
+.infoButton.highscoreMini {
+  background: linear-gradient(180deg, #e6c65a 0%, #c89d18 100%);
+  border: 1px solid rgba(255,215,120,0.65);
+  color: #fff8dc;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 2px 6px rgba(0,0,0,0.35);
+}
+
+.infoButton.highscoreMini:hover {
+  background: linear-gradient(180deg, #f0d36d 0%, #d7aa1f 100%);
+}
+
+/* Red appearance for the Fehler melden button only */
+.infoButton#openBugReportBtn {
+  background: linear-gradient(180deg, #d56b6b 0%, #b32020 100%);
+  border: 1px solid rgba(255,160,160,0.65);
+  color: #fff5f5;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.30), 0 2px 6px rgba(0,0,0,0.35);
+}
+
+.infoButton#openBugReportBtn:hover {
+  background: linear-gradient(180deg, #e57d7d 0%, #c62a2a 100%);
 }
 
 .credits {
@@ -248,6 +271,42 @@ h1 {
   justify-content: center;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+#bugReportPanel {
+  display:none;
+  position:fixed;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  z-index:1003;
+  width:min(92vw,560px);
+  padding:18px;
+  border-radius:16px;
+  background:rgba(0,0,0,.9);
+  color:white;
+  text-align:center;
+}
+
+#bugReportPanel input,
+#bugReportPanel select,
+#bugReportPanel textarea{
+  width:92%;
+  margin:8px 0;
+  padding:10px;
+  box-sizing:border-box;
+  border-radius:10px;
+}
+
+#bugReportPanel textarea{
+  min-height:140px;
+}
+
+.bugReportButtonRow{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  margin-top:10px;
 }
 
 #highscorePanel {
@@ -610,6 +669,11 @@ h1 {
 <button class="infoButton highscoreMini" id="showHighscoreUmkehrenBtn">
   🏆 Umkehren
 </button>
+
+<button class="infoButton highscoreMini" id="openBugReportBtn">
+  🐞 Fehler melden
+</button>
+
     <div class="credits">Entwickelt von KfAusbZ Oldenburg<br>© HptFw Lang</div>
   </div>
 </main>
@@ -694,6 +758,7 @@ h1 {
     <div id="highscoreList"></div>
   </div>
 
+
   <div class="controls">
     <div class="steeringPanel">
       <div id="steerDisplay">Lenkrad: 0°</div>
@@ -724,16 +789,40 @@ h1 {
       </button>
     </div>
   </div>
-</section>
+  </section>
+
+  <div id="bugReportPanel">
+    <h3>🐞 Fehler melden</h3>
+
+    <input id="bugNameInput" maxlength="30" placeholder="Name (optional)">
+
+    <select id="bugTaskSelect">
+      <option value="allgemein">Allgemein</option>
+      <option value="gerade">20 m Rampe</option>
+      <option value="umkehren">Umkehren</option>
+    </select>
+
+    <textarea id="bugTextInput" maxlength="2000"
+      placeholder="Beschreibe den Fehler möglichst genau..."></textarea>
+
+    <input id="bugScreenshotInput" type="file" accept="image/*">
+
+    <div class="bugReportButtonRow">
+      <button id="sendBugReportBtn">Senden</button>
+      <button id="closeBugReportBtn">Schließen</button>
+    </div>
+
+    <div id="bugReportStatus"></div>
+  </div>
 
 <script>
 /* =========================================================
    01 GLOBALE EINSTELLUNGEN
    Diese Werte gelten für beide Aufgaben.
    ========================================================= */
-
-const HIGHSCORE_URL = "https://script.google.com/macros/s/AKfycbxw2n0pBykM-rJBe-d1gXA0NEr89MIgSWk1F-o_Sm5ORRvJX2rtEW6hqKQNZM8CZKOZWw/exec";
-
+const GAME_VERSION = "0.4.0";
+const HIGHSCORE_URL = "https://script.google.com/macros/s/AKfycbwKMoKVpwwGgBsF-qp8j9BAUavTWIWp4j1tqCaU_WFnCQkHMqRu32WnPEuLVHVNd7y1rQ/exec";
+const BUGREPORT_URL = "https://script.google.com/macros/s/AKfycbwKMoKVpwwGgBsF-qp8j9BAUavTWIWp4j1tqCaU_WFnCQkHMqRu32WnPEuLVHVNd7y1rQ/exec";
 const GLOBAL = {
   worldWidth: 3500,
   worldHeight: 2300,
@@ -962,6 +1051,15 @@ const showOnlyHighscoreBtn = document.getElementById("showOnlyHighscoreBtn");
 const closeHighscoreViewBtn = document.getElementById("closeHighscoreViewBtn");
 const highscoreStatus = document.getElementById("highscoreStatus");
 const highscoreList = document.getElementById("highscoreList");
+const openBugReportBtn = document.getElementById("openBugReportBtn");
+const bugReportPanel = document.getElementById("bugReportPanel");
+const bugNameInput = document.getElementById("bugNameInput");
+const bugTaskSelect = document.getElementById("bugTaskSelect");
+const bugTextInput = document.getElementById("bugTextInput");
+const bugScreenshotInput = document.getElementById("bugScreenshotInput");
+const sendBugReportBtn = document.getElementById("sendBugReportBtn");
+const closeBugReportBtn = document.getElementById("closeBugReportBtn");
+const bugReportStatus = document.getElementById("bugReportStatus");
 
 /* =========================================================
    05 SPIELZUSTAND
@@ -1065,6 +1163,63 @@ document.getElementById("showHighscoreGeradeBtn").addEventListener("click", func
 document.getElementById("showHighscoreUmkehrenBtn").addEventListener("click", function () {
   showHighscoreViewer("umkehren");
 });
+openBugReportBtn.addEventListener("click", function () {
+  openBugReportPanel();
+});
+
+closeBugReportBtn.addEventListener("click", function () {
+  closeBugReportPanel();
+});
+
+sendBugReportBtn.addEventListener("click", function () {
+  const text = bugTextInput.value.trim();
+
+  if (!text) {
+    bugReportStatus.textContent = "Bitte beschreibe den Fehler.";
+    return;
+  }
+
+  const file = bugScreenshotInput.files && bugScreenshotInput.files[0]
+    ? bugScreenshotInput.files[0]
+    : null;
+
+  sendBugReportBtn.disabled = true;
+  bugReportStatus.textContent = "Bugreport wird vorbereitet...";
+
+  readBugScreenshotFile(file)
+    .then(function (screenshot) {
+      bugReportStatus.textContent = "Bugreport wird gesendet...";
+
+      return fetch(BUGREPORT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8"
+        },
+        body: JSON.stringify({
+          action: "bugreport",
+          name: bugNameInput.value.trim(),
+          aufgabe: bugTaskSelect.value,
+          beschreibung: text,
+          screenshot: screenshot,
+          state: getBugReportGameState()
+        })
+      });
+    })
+    .then(function () {
+      bugReportStatus.textContent = "Bugreport gesendet.";
+      bugTextInput.value = "";
+      bugScreenshotInput.value = "";
+    })
+    .catch(function (error) {
+      console.error("Bugreport Fehler:", error);
+      bugReportStatus.textContent = error.message || "Fehler beim Senden.";
+    })
+    .finally(function () {
+      sendBugReportBtn.disabled = false;
+    });
+});
+
 showOnlyHighscoreBtn.addEventListener("click", function () {
   if (!lastResult) return;
   showHighscoreViewer(lastResult.aufgabe);
@@ -1460,13 +1615,12 @@ mirrorToggleBtn.addEventListener("click", function () {
 document.addEventListener("keydown", function (e) {
 
   if (
-
-    document.activeElement === playerNameInput
-
+    document.activeElement === playerNameInput ||
+    document.activeElement === bugNameInput ||
+    document.activeElement === bugTextInput ||
+    document.activeElement === bugTaskSelect
   ) {
-
     return;
-
   }
 
   keys[e.key.toLowerCase()] = true;
@@ -1486,13 +1640,14 @@ document.addEventListener("keydown", function (e) {
 });
 
 document.addEventListener("keyup", function (e) {
-
   if (
-    document.activeElement === playerNameInput
+    document.activeElement === playerNameInput ||
+    document.activeElement === bugNameInput ||
+    document.activeElement === bugTextInput ||
+    document.activeElement === bugTaskSelect
   ) {
     return;
   }
-
   keys[e.key.toLowerCase()] = false;
 });
 
@@ -3280,7 +3435,7 @@ function drawOrthoTruckFront(view) {
   const truckFrontW = trailer.width * 1.11;
   const truckH = 115;
   // LKW-Front etwas anheben, damit die Vorderräder darunter sichtbar werden.
-  const zLift = 8 / view.verticalScale;
+  const zLift = 7 / view.verticalScale;
   const leftBottom = view.projectLocal(180, -truckFrontW / 2, zLift);
   const rightBottom = view.projectLocal(180, truckFrontW / 2, zLift);
   const leftTop = view.projectLocal(180, -truckFrontW / 2, truckH + zLift);
@@ -4296,15 +4451,16 @@ function saveHighscore() {
     headers: {
       "Content-Type": "text/plain;charset=utf-8"
     },
-    body: JSON.stringify({
-      name: name,
-      aufgabe: lastResult.aufgabe,
-      punkte: lastResult.punkte,
-      zeitMs: lastResult.zeitMs,
-      zeitText: lastResult.zeitText,
-      korrekturzuege: lastResult.korrekturzuege
-    })
-  })
+   body: JSON.stringify({
+  action: "highscore",
+  name: name,
+  aufgabe: lastResult.aufgabe,
+  punkte: lastResult.punkte,
+  zeitMs: lastResult.zeitMs,
+  zeitText: lastResult.zeitText,
+  korrekturzuege: lastResult.korrekturzuege
+})
+})
   .then(function () {
     highscoreStatus.textContent = "Gesendet. Bestenliste wird aktualisiert...";
 
@@ -4396,6 +4552,195 @@ function renderHighscores(list, ownName) {
       "<span>" + escapeHtml(entry.zeitText) + "</span>";
 
     highscoreList.appendChild(row);
+  });
+}
+
+function openBugReportPanel() {
+  bugReportPanel.style.display = "block";
+  highscorePanel.style.display = "none";
+  bugReportStatus.textContent = "";
+  bugTextInput.value = "";
+  bugScreenshotInput.value = "";
+
+  const savedName = localStorage.getItem("playerName") || "";
+  bugNameInput.value = savedName;
+
+  if (activeTask && activeTask.id) {
+    bugTaskSelect.value = activeTask.id;
+  } else {
+    bugTaskSelect.value = "allgemein";
+  }
+}
+
+function closeBugReportPanel() {
+  bugReportPanel.style.display = "none";
+  bugReportStatus.textContent = "";
+}
+
+function getCanvasScreenshotDataUrl() {
+  try {
+    if (!canvas) return null;
+    return canvas.toDataURL("image/png");
+  } catch (error) {
+    console.warn("Canvas-Screenshot konnte nicht erstellt werden:", error);
+    return null;
+  }
+}
+
+function getBugReportGameState() {
+  return {
+    version: document.title,
+    aufgabe: activeTask ? activeTask.id : "menue",
+    gameRunning: gameRunning,
+    crashed: crashed,
+    crashReason: crashReason,
+    taskCompleted: taskCompleted,
+    correctionMoves: correctionMoves,
+    gear: gear,
+    maxSpeed: maxSpeed,
+    wheelAngle: Math.round(wheelAngle),
+    truck: truck ? {
+      x: Math.round(truck.x),
+      y: Math.round(truck.y),
+      angle: Number(truck.angle.toFixed(4)),
+      speed: Number(truck.speed.toFixed(3))
+    } : null,
+    trailer: trailer ? {
+      x: Math.round(trailer.x),
+      y: Math.round(trailer.y),
+      angle: Number(trailer.angle.toFixed(4)),
+      drawbarAngle: Number(trailer.drawbarAngle.toFixed(4))
+    } : null,
+    timestamp: new Date().toISOString()
+  };
+}
+
+function getBugReportGameState() {
+  return {
+    version: document.title,
+    aufgabe: activeTask ? activeTask.id : "menue",
+    spielzeitMs: Date.now() - startTime,
+    korrekturzuege: correctionMoves,
+    gasphasen: gasPhases,
+    gang: gear,
+    maxSpeed: maxSpeed,
+    lenkrad: Math.round(wheelAngle),
+
+    truck: truck ? {
+      x: Math.round(truck.x),
+      y: Math.round(truck.y),
+      winkel: Number(truck.angle.toFixed(4)),
+      speed: Number(truck.speed.toFixed(3))
+    } : null,
+
+    trailer: trailer ? {
+      x: Math.round(trailer.x),
+      y: Math.round(trailer.y),
+      winkel: Number(trailer.angle.toFixed(4)),
+      deichselWinkel: Number(trailer.drawbarAngle.toFixed(4))
+    } : null,
+
+    kamera: {
+      x: Math.round(camera.x),
+      y: Math.round(camera.y),
+      zoom: Number(camera.zoom.toFixed(3))
+    },
+
+    frontansicht: {
+      aktiv: showMirrorView,
+      x: frontViewWindow.x,
+      y: frontViewWindow.y,
+      w: frontViewWindow.w,
+      h: frontViewWindow.h
+    },
+
+    geraet: {
+      breite: window.innerWidth,
+      hoehe: window.innerHeight,
+      touch: "ontouchstart" in window,
+      userAgent: navigator.userAgent
+    },
+
+    zeitpunkt: new Date().toISOString()
+  };
+}
+
+function readBugScreenshotFile(file) {
+  return new Promise(function (resolve, reject) {
+    if (!file) {
+      resolve(null);
+      return;
+    }
+
+    if (!file.type || !file.type.startsWith("image/")) {
+      reject(new Error("Bitte eine Bilddatei auswählen."));
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function () {
+      const img = new Image();
+
+      img.onload = function () {
+        const maxPayloadBytes = 1024 * 1024;
+        let maxWidth = 1600;
+        let quality = 0.82;
+        let dataUrl = "";
+        let canvasTmp = null;
+
+        for (let attempt = 0; attempt < 10; attempt++) {
+          const scale = Math.min(1, maxWidth / img.width);
+          const targetW = Math.max(1, Math.round(img.width * scale));
+          const targetH = Math.max(1, Math.round(img.height * scale));
+
+          canvasTmp = document.createElement("canvas");
+          canvasTmp.width = targetW;
+          canvasTmp.height = targetH;
+
+          const c = canvasTmp.getContext("2d");
+          c.drawImage(img, 0, 0, targetW, targetH);
+
+          dataUrl = canvasTmp.toDataURL("image/jpeg", quality);
+
+          if (dataUrl.length <= maxPayloadBytes) break;
+
+          if (quality > 0.48) {
+            quality -= 0.10;
+          } else {
+            maxWidth = Math.round(maxWidth * 0.78);
+            quality = 0.70;
+          }
+        }
+
+        if (!dataUrl || dataUrl.length > maxPayloadBytes) {
+          reject(new Error("Bild konnte nicht unter 1 MB verkleinert werden."));
+          return;
+        }
+
+        resolve({
+          name: file.name.replace(/\.[^.]+$/, "") + ".jpg",
+          type: "image/jpeg",
+          originalSize: file.size,
+          size: dataUrl.length,
+          width: canvasTmp ? canvasTmp.width : null,
+          height: canvasTmp ? canvasTmp.height : null,
+          dataUrl: dataUrl
+        });
+      };
+
+      img.onerror = function () {
+        reject(new Error("Bild konnte nicht verarbeitet werden."));
+      };
+
+      img.src = String(reader.result || "");
+    };
+
+    reader.onerror = function () {
+      reject(new Error("Screenshot konnte nicht gelesen werden."));
+    };
+
+    reader.readAsDataURL(file);
   });
 }
 
