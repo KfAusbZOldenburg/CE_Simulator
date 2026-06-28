@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Grundfahraufgaben CE</title>
+<title>Grundfahraufgaben CE - v4</title>
 
 <style>
 /* =========================================================
@@ -424,6 +424,15 @@ h1 {
   margin-top: 5px;
 }
 
+#mirrorToggleBtn {
+  margin-top: 5px;
+  background: #1f4f7a;
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  padding: 8px 12px;
+}
+
 .pedalRow {
   grid-column: 4;
   display: flex;
@@ -703,6 +712,7 @@ h1 {
       <input type="range" id="speedSlider" min="1" max="10" value="4">
       <button id="followBtn">Zentrieren</button>
       <button id="guideBtn">Hilfslinien AUS</button>
+      <button id="mirrorToggleBtn">Frontansicht EIN</button>
     </div>
 
     <div class="pedalRow">
@@ -737,6 +747,11 @@ const GLOBAL = {
   // Position des Drehschemels / Deichselanschlusses am Anhänger.
   // Größerer Wert = Deichsel sitzt weiter hinten am Anhänger.
   trailerFrontAxleInset: 30,
+
+  // Hinterachse des Anhängers.
+  // Dieser Wert steuert die HA in der Topview UND in der Frontansicht.
+  // Mehr negativ = weiter nach hinten, weniger negativ = weiter nach vorne.
+  trailerRearAxleX: -75,
 
   drawbarLength: 100,
 
@@ -933,6 +948,7 @@ const speedSlider = document.getElementById("speedSlider");
 const speedDisplay = document.getElementById("speedDisplay");
 const followBtn = document.getElementById("followBtn");
 const guideBtn = document.getElementById("guideBtn");
+const mirrorToggleBtn = document.getElementById("mirrorToggleBtn");
 
 const highscorePanel = document.getElementById("highscorePanel");
 const highscoreTitle = document.getElementById("highscoreTitle");
@@ -982,6 +998,8 @@ let wheelDragging = false;
 let lastPointerAngle = 0;
 let steeringValue = 0;
 
+let wheelRotation = 0;
+
 let followTruck = true;
 let draggingMap = false;
 let draggingMouse = false;
@@ -1003,6 +1021,37 @@ const camera = {
 
 const keys = {};
 let showReverseGuideLines = false;
+let showMirrorView = true;
+const frontViewWindow = {
+  x: null,
+  y: null,
+  w: 0,
+  h: 0,
+  // Vom Nutzer eingestellte Größe (überschreibt die automatische Standardgröße,
+  // sobald an einem Eck-Anfasser gezogen wurde).
+  userW: null,
+  userH: null,
+  dragging: false,
+  dragOffsetX: 0,
+  dragOffsetY: 0,
+  // Größenverstellung über die vier Eck-Anfasser.
+  resizing: false,
+  resizeCorner: null,   // "nw" | "ne" | "sw" | "se"
+  resizeStartX: 0,
+  resizeStartY: 0,
+  resizeStartLeft: 0,
+  resizeStartTop: 0,
+  resizeStartW: 0,
+  resizeStartH: 0
+};
+
+// Größenlimits für das frei skalierbare Frontfenster.
+const FRONT_VIEW_MIN_W = 220;
+const FRONT_VIEW_MIN_H = 130;
+const FRONT_VIEW_MAX_W = 900;
+const FRONT_VIEW_MAX_H = 600;
+// Kantenlänge der dreieckigen Anfasser in den Ecken.
+const FRONT_VIEW_HANDLE_SIZE = 34;
 let lastResult = null;
 let highscoreAlreadyShown = false;
 let highscoreViewTaskId = null;
@@ -1059,6 +1108,54 @@ trailerImageRaw.onload = function () {
 
 truckImageRaw.src = "fahrzeug_sprite_1.png";
 trailerImageRaw.src = "fahrzeug_sprite_2.png?v=2";
+
+// Sprites für die orthographische Frontansicht.
+// Wenn eine Datei nicht vorhanden ist, zeichnet das Spiel automatisch die bisherige Box-Grafik.
+// Zum Ersetzen einfach gleichnamige PNG-Dateien neben die HTML-Datei legen oder die Pfade hier ändern.
+const FRONT_VIEW_SPRITE_FILES = {
+  truckFront: "front_truck_sprite.png",
+
+  // Oberbau-Sprites des Anhängers:
+  // nur Plane / Bordwände / Tarnmuster, ohne Räder, ohne Deichsel, ohne Unterbau.
+  trailerFront: "upper_front_trailer_sprite.png",
+  trailerRear: "upper_rear_trailer_sprite.png",
+  trailerSideLeft: "upper_side_trailer_sprite.png",
+  trailerSideRight: "upper_side_trailer_sprite.png",
+  // Unterbau-Seitentextur des Anhängers (zwischen Boden und upper_sprite).
+  trailerLowerSide: "lower_side_trailer_sprite.png",
+  tireFront: "tire_front_sprite.png",
+  tireSide: "tire_side_sprite.png",
+  // Eigene Seitentextur nur für die LKW-Vorderreifen.
+  tireTruckSide: "tire_truck_side_sprite.png",
+  tireTruckFront: "tire_truck_front_sprite.png",
+  // Textur für die zur Fahrzeugmitte zeigenden Innenseiten der Räder.
+  tireInside: "tire_inside_sprite.png"
+};
+
+const frontViewSprites = {};
+
+function loadFrontViewSprite(id, src) {
+  const image = new Image();
+  frontViewSprites[id] = {
+    image: image,
+    loaded: false,
+    failed: false
+  };
+
+  image.onload = function () {
+    frontViewSprites[id].loaded = true;
+  };
+
+  image.onerror = function () {
+    frontViewSprites[id].failed = true;
+  };
+
+  image.src = src;
+}
+
+for (const spriteId in FRONT_VIEW_SPRITE_FILES) {
+  loadFrontViewSprite(spriteId, FRONT_VIEW_SPRITE_FILES[spriteId]);
+}
 
 function prepareSprite(image, targetCanvas, targetCtx) {
   targetCanvas.width = image.width;
@@ -1215,6 +1312,7 @@ const randomYOffset =
   showReverseGuideLines = false;
 
   guideBtn.textContent = "Hilfslinien AUS";
+  updateMirrorButtonText();
 
   controls.style.display = "grid";
   restartBtn.style.display = "none";
@@ -1354,6 +1452,11 @@ guideBtn.addEventListener("click", function () {
       : "Hilfslinien AUS";
 });
 
+mirrorToggleBtn.addEventListener("click", function () {
+  showMirrorView = !showMirrorView;
+  updateMirrorButtonText();
+});
+
 document.addEventListener("keydown", function (e) {
 
   if (
@@ -1370,6 +1473,11 @@ document.addEventListener("keydown", function (e) {
   keys[e.key.toLowerCase()] = true;
   if (e.key.toLowerCase() === "h") {
     showReverseGuideLines = !showReverseGuideLines;
+  }
+
+  if (e.key.toLowerCase() === "m") {
+    showMirrorView = !showMirrorView;
+    updateMirrorButtonText();
   }
 
   if (["w", "a", "s", "d", "r", " ", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(e.key.toLowerCase())) {
@@ -1432,6 +1540,11 @@ canvas.addEventListener("contextmenu", function (e) {
 });
 
 canvas.addEventListener("mousedown", function (e) {
+  if (handleFrontViewPointerDown(e.clientX, e.clientY)) {
+    e.preventDefault();
+    return;
+  }
+
   if (e.button !== 2) return;
 
   draggingMouse = true;
@@ -1441,6 +1554,11 @@ canvas.addEventListener("mousedown", function (e) {
 });
 
 canvas.addEventListener("mousemove", function (e) {
+  if (updateFrontViewDrag(e.clientX, e.clientY)) {
+    e.preventDefault();
+    return;
+  }
+
   updateCoordBox(e.clientX, e.clientY);
 
   if (!draggingMouse) return;
@@ -1456,10 +1574,16 @@ canvas.addEventListener("mousemove", function (e) {
 });
 
 canvas.addEventListener("mouseup", function () {
+  frontViewWindow.dragging = false;
+  frontViewWindow.resizing = false;
+  frontViewWindow.resizeCorner = null;
   draggingMouse = false;
 });
 
 canvas.addEventListener("mouseleave", function () {
+  frontViewWindow.dragging = false;
+  frontViewWindow.resizing = false;
+  frontViewWindow.resizeCorner = null;
   draggingMouse = false;
 });
 
@@ -1481,9 +1605,16 @@ canvas.addEventListener("wheel", function (e) {
 
 canvas.addEventListener("touchstart", function (e) {
   if (e.touches.length === 1) {
+    const touch = e.touches[0];
+    if (handleFrontViewPointerDown(touch.clientX, touch.clientY)) {
+      e.preventDefault();
+      draggingMap = false;
+      return;
+    }
+
     draggingMap = true;
-    lastTouchX = e.touches[0].clientX;
-    lastTouchY = e.touches[0].clientY;
+    lastTouchX = touch.clientX;
+    lastTouchY = touch.clientY;
   }
 
   if (e.touches.length === 2) {
@@ -1499,6 +1630,12 @@ canvas.addEventListener("touchstart", function (e) {
 }, { passive: false });
 
 canvas.addEventListener("touchmove", function (e) {
+  if (e.touches.length === 1 && frontViewWindow.dragging) {
+    e.preventDefault();
+    updateFrontViewDrag(e.touches[0].clientX, e.touches[0].clientY);
+    return;
+  }
+
   if (e.touches.length === 1) {
     updateCoordBox(e.touches[0].clientX, e.touches[0].clientY);
   }
@@ -1534,6 +1671,9 @@ canvas.addEventListener("touchend", function (e) {
   }
 
   if (e.touches.length === 0) {
+    frontViewWindow.dragging = false;
+    frontViewWindow.resizing = false;
+    frontViewWindow.resizeCorner = null;
     draggingMap = false;
   }
 });
@@ -1557,6 +1697,7 @@ gasWasPressed = gasPressed;
   }
 
   updateSpeed();
+wheelRotation += truck.speed * 0.06;
   updateSteering();
   updateTruckPhysics();
   updateTrailerPhysics();
@@ -1564,6 +1705,8 @@ gasWasPressed = gasPressed;
   updateStraightnessTracker();
   checkCrashAndSuccess();
 }
+
+
 
 function updateSpeed() {
   if (keys["w"] || keys["arrowup"]) {
@@ -2089,8 +2232,8 @@ function getWheelTriggerPoints() {
   points.push(localToWorld(truck, 130, -truck.width / 3 - 2));
   points.push(localToWorld(truck, 130,  truck.width / 3 + 2));
 
-  points.push(localToWorld(trailer, -90, -trailer.width / 3 - 10));
-  points.push(localToWorld(trailer, -90,  trailer.width / 3 + 10));
+  points.push(localToWorld(trailer, GLOBAL.trailerRearAxleX, -trailer.width / 3 - 10));
+  points.push(localToWorld(trailer, GLOBAL.trailerRearAxleX,  trailer.width / 3 + 10));
 
   const frontAxleX = trailer.length / 2 - GLOBAL.trailerFrontAxleInset;
   const axleCenter = localToWorld(trailer, frontAxleX, 0);
@@ -2295,6 +2438,7 @@ function drawGame() {
   ctx.restore();
 
   drawHud();
+  drawMirrorView();
 
   if (crashed) {
     drawCrashOverlay();
@@ -2413,10 +2557,10 @@ function drawTruck() {
   ctx.translate(truck.x, truck.y);
   ctx.rotate(truck.angle);
 
-  drawWheel(-95, -truck.width / 3 - 10, 0);
-  drawWheel(-95,  truck.width / 3 + 10, 0);
-  drawWheel(-95, -truck.width / 5 - 10, 0);
-  drawWheel(-95,  truck.width / 5 + 10, 0);
+  drawWheel(GLOBAL.rearAxleOffset, -truck.width / 3 - 10, 0);
+  drawWheel(GLOBAL.rearAxleOffset,  truck.width / 3 + 10, 0);
+  drawWheel(GLOBAL.rearAxleOffset, -truck.width / 5 - 10, 0);
+  drawWheel(GLOBAL.rearAxleOffset,  truck.width / 5 + 10, 0);
 
   drawWheel(130, -truck.width / 3 - 6, truck.steeringAngle);
   drawWheel(130,  truck.width / 3 + 6, truck.steeringAngle);
@@ -2467,8 +2611,18 @@ function drawTrailer() {
   ctx.translate(trailer.x, trailer.y);
   ctx.rotate(trailer.angle);
 
-  drawWheel(-90, -trailer.width / 3 - 10, 0);
-  drawWheel(-90,  trailer.width / 3 + 10, 0);
+  const wheelY = trailer.width / 3 + 10;
+
+  // Hinterachse (HA) – Achse zwischen den Rädern, mittig durch die Reifen
+  ctx.strokeStyle = "black";
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.moveTo(GLOBAL.trailerRearAxleX, -wheelY);
+  ctx.lineTo(GLOBAL.trailerRearAxleX,  wheelY);
+  ctx.stroke();
+
+  drawWheel(GLOBAL.trailerRearAxleX, -wheelY, 0);
+  drawWheel(GLOBAL.trailerRearAxleX,  wheelY, 0);
 
   const frontAxleX = trailer.length / 2 - GLOBAL.trailerFrontAxleInset;
   const axleAngle = trailer.drawbarAngle - trailer.angle;
@@ -2477,15 +2631,16 @@ function drawTrailer() {
   ctx.translate(frontAxleX, 0);
   ctx.rotate(axleAngle);
 
+  // Vorderachse (VA) – Achse zwischen den Rädern, mittig durch die Reifen
   ctx.strokeStyle = "black";
   ctx.lineWidth = 5;
   ctx.beginPath();
-  ctx.moveTo(0, -trailer.width / 2);
-  ctx.lineTo(0,  trailer.width / 2);
+  ctx.moveTo(0, -wheelY);
+  ctx.lineTo(0,  wheelY);
   ctx.stroke();
 
-  drawWheel(0, -trailer.width / 3 - 10, 0);
-  drawWheel(0,  trailer.width / 3 + 10, 0);
+  drawWheel(0, -wheelY, 0);
+  drawWheel(0,  wheelY, 0);
 
   ctx.restore();
   ctx.restore();
@@ -2524,6 +2679,1205 @@ function drawDrawbar() {
   ctx.strokeStyle = "black";
   ctx.lineWidth = 4;
   ctx.stroke();
+}
+
+
+/* =========================================================
+   16A ORTHOGRAPHISCHE FRONTANSICHT
+   Kein Außenspiegel mehr: ein einzelnes Fenster zeigt eine orthographische
+   Frontansicht. Die Ansicht schaut von vorne auf den LKW und dahinter auf
+   den Anhänger. Die seitliche Position und der Knick werden direkt aus der
+   TopView-Geometrie projiziert – ohne Fluchtpunkt und ohne perspektivische
+   Verkleinerung.
+   ========================================================= */
+
+function updateMirrorButtonText() {
+  if (!mirrorToggleBtn) return;
+  mirrorToggleBtn.textContent = showMirrorView ? "Frontansicht EIN" : "Frontansicht AUS";
+}
+
+function drawMirrorView() {
+  if (!showMirrorView || !truck || !trailer || !gameRunning) return;
+
+  const isPortrait = canvas.height > canvas.width;
+  const controlsHeight = controls && controls.style.display !== "none"
+    ? controls.getBoundingClientRect().height
+    : 0;
+
+  const autoWidth = clamp(isPortrait ? canvas.width * 0.74 : canvas.width * 0.34, 260, 520);
+  const autoHeight = clamp(isPortrait ? canvas.height * 0.22 : canvas.height * 0.30, 150, 260);
+
+  // Sobald der Nutzer das Fenster manuell skaliert hat, gilt seine Größe.
+  const maxW = Math.min(FRONT_VIEW_MAX_W, canvas.width - 12);
+  const maxH = Math.min(FRONT_VIEW_MAX_H, canvas.height - 12);
+  const viewWidth = clamp(frontViewWindow.userW ?? autoWidth, FRONT_VIEW_MIN_W, maxW);
+  const viewHeight = clamp(frontViewWindow.userH ?? autoHeight, FRONT_VIEW_MIN_H, maxH);
+
+  const defaultX = canvas.width - viewWidth - 14;
+  const defaultY = isPortrait ? 102 : 64;
+
+  if (isPortrait && frontViewWindow.userH === null &&
+      defaultY + viewHeight > canvas.height - controlsHeight - 12) return;
+
+  frontViewWindow.w = viewWidth;
+  frontViewWindow.h = viewHeight;
+
+  if (frontViewWindow.x === null || frontViewWindow.y === null) {
+    frontViewWindow.x = defaultX;
+    frontViewWindow.y = defaultY;
+  }
+
+  clampFrontViewWindowToCanvas();
+  drawOrthographicFrontWindow(frontViewWindow.x, frontViewWindow.y, viewWidth, viewHeight);
+}
+
+function drawOrthographicFrontWindow(x, y, w, h) {
+  ctx.save();
+
+  roundedRectPath(x, y, w, h, 16);
+  ctx.fillStyle = "rgba(4, 7, 10, 0.94)";
+  ctx.fill();
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = "rgba(255,255,255,0.72)";
+  ctx.stroke();
+
+  drawFrontViewCloseButton(x, y, w, h);
+
+  ctx.save();
+  roundedRectPath(x + 4, y + 4, w - 8, h - 8, 13);
+  ctx.clip();
+
+  const bg = ctx.createLinearGradient(x, y, x, y + h);
+  bg.addColorStop(0, "#90a9b8");
+  bg.addColorStop(0.48, "#6d828e");
+  bg.addColorStop(0.49, "#3a3d3f");
+  bg.addColorStop(1, "#26292b");
+  ctx.fillStyle = bg;
+  ctx.fillRect(x, y, w, h);
+
+  const view = makeOrthographicFrontProjector(x, y, w, h);
+
+  drawOrthoReferenceLines(view);
+  drawOrthoTrailer(view);
+  drawOrthoDrawbar(view);
+  drawOrthoTruckWheels(view);
+  drawOrthoTruckFront(view);
+  // Bewusst keine Schrift/Overlay-Texte mehr: Fenster bleibt clean.
+
+  // Leichte Glas-/Fensteroptik, aber keine Spiegelung.
+  const shine = ctx.createLinearGradient(x, y, x + w, y + h);
+  shine.addColorStop(0, "rgba(255,255,255,0.16)");
+  shine.addColorStop(0.35, "rgba(255,255,255,0.03)");
+  shine.addColorStop(1, "rgba(0,0,0,0.18)");
+  ctx.fillStyle = shine;
+  ctx.fillRect(x, y, w, h);
+
+  ctx.restore();
+
+  // Resize-Pfeile ganz am Ende zeichnen, damit beide Dreiecke sichtbar bleiben
+  // und nicht von der Frontansicht-Fläche überdeckt werden.
+  drawFrontViewResizeHandles(x, y, w, h);
+
+  ctx.restore();
+}
+
+function drawFrontViewCloseButton(x, y, w, h) {
+  const r = getFrontViewCloseRect();
+  if (!r) return;
+
+  ctx.save();
+  ctx.fillStyle = "rgba(170, 20, 20, 0.92)";
+  ctx.beginPath();
+  ctx.arc(r.x + r.w / 2, r.y + r.h / 2, r.w / 2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(255,255,255,0.85)";
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  ctx.strokeStyle = "white";
+  ctx.lineWidth = 2.2;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(r.x + 8, r.y + 8);
+  ctx.lineTo(r.x + r.w - 8, r.y + r.h - 8);
+  ctx.moveTo(r.x + r.w - 8, r.y + 8);
+  ctx.lineTo(r.x + 8, r.y + r.h - 8);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function getFrontViewCloseRect() {
+  if (frontViewWindow.x === null || frontViewWindow.y === null) return null;
+
+  const size = 28;
+  return {
+    x: frontViewWindow.x + frontViewWindow.w - size - 9,
+    y: frontViewWindow.y + 9,
+    w: size,
+    h: size
+  };
+}
+
+function pointInRect(px, py, rect) {
+  return rect && px >= rect.x && px <= rect.x + rect.w && py >= rect.y && py <= rect.y + rect.h;
+}
+
+// Liefert für jede Ecke das rechtwinklige Dreieck (Anfasser), das andeutet,
+// dass das Fenster größenverstellbar ist.
+function getFrontViewResizeCorners() {
+  if (frontViewWindow.x === null || frontViewWindow.y === null) return [];
+
+  const s = FRONT_VIEW_HANDLE_SIZE;
+  const x = frontViewWindow.x;
+  const y = frontViewWindow.y;
+  const w = frontViewWindow.w;
+  const h = frontViewWindow.h;
+
+  return [
+    {
+      corner: "nw",
+      hit: { x: x, y: y, w: s, h: s },
+      tri: [{ x: x, y: y }, { x: x + s, y: y }, { x: x, y: y + s }]
+    },
+    {
+      corner: "ne",
+      hit: { x: x + w - s, y: y, w: s, h: s },
+      tri: [{ x: x + w, y: y }, { x: x + w - s, y: y }, { x: x + w, y: y + s }]
+    },
+    {
+      corner: "sw",
+      hit: { x: x, y: y + h - s, w: s, h: s },
+      tri: [{ x: x, y: y + h }, { x: x + s, y: y + h }, { x: x, y: y + h - s }]
+    },
+    {
+      corner: "se",
+      hit: { x: x + w - s, y: y + h - s, w: s, h: s },
+      tri: [{ x: x + w, y: y + h }, { x: x + w - s, y: y + h }, { x: x + w, y: y + h - s }]
+    }
+  ];
+}
+
+function drawFrontViewResizeHandles(x, y, w, h) {
+  // Mac-ähnliche Größen-Anfasser: in JEDER Ecke zwei gegenüberliegende Dreiecke.
+  // Ein Dreieck zeigt diagonal nach außen, das andere diagonal nach innen.
+  ctx.save();
+
+  const activeCorner = frontViewWindow.resizing ? frontViewWindow.resizeCorner : null;
+  const fillNormal = "rgba(0,0,0,0.92)";
+  const fillActive = "rgba(0,0,0,0.98)";
+  const stroke = "rgba(255,255,255,0.72)";
+  const size = 15;
+  const gap = 3;
+
+  function drawTri(points, fill) {
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    ctx.lineTo(points[1].x, points[1].y);
+    ctx.lineTo(points[2].x, points[2].y);
+    ctx.closePath();
+    ctx.fillStyle = fill;
+    ctx.fill();
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = 1.4;
+    ctx.stroke();
+  }
+
+  function drawPair(corner, cx, cy, sx, sy) {
+    // sx/sy: Richtung aus dem Fenster heraus.
+    const fill = activeCorner === corner ? fillActive : fillNormal;
+
+    // 1) Außendreieck: Spitze zeigt nach außen in die Ecke.
+    drawTri([
+      { x: cx,             y: cy },
+      { x: cx - sx * size, y: cy },
+      { x: cx,             y: cy - sy * size }
+    ], fill);
+
+    // 2) Innendreieck: gegenüberliegend, Spitze zeigt nach innen.
+    const ix = cx - sx * (size + gap);
+    const iy = cy - sy * (size + gap);
+    drawTri([
+      { x: ix,             y: iy },
+      { x: ix + sx * size, y: iy },
+      { x: ix,             y: iy + sy * size }
+    ], fill);
+  }
+
+  drawPair("nw", x + 6,     y + 6,     -1, -1);
+  drawPair("ne", x + w - 6, y + 6,      1, -1);
+  drawPair("sw", x + 6,     y + h - 6, -1,  1);
+  drawPair("se", x + w - 6, y + h - 6,  1,  1);
+
+  ctx.restore();
+}
+
+function handleFrontViewPointerDown(clientX, clientY) {
+  if (!showMirrorView || frontViewWindow.x === null || frontViewWindow.y === null) return false;
+
+  const rect = {
+    x: frontViewWindow.x,
+    y: frontViewWindow.y,
+    w: frontViewWindow.w,
+    h: frontViewWindow.h
+  };
+
+  // Eck-Anfasser zuerst prüfen (auch leicht außerhalb des Fensterrandes treffbar).
+  const corners = getFrontViewResizeCorners();
+  for (const c of corners) {
+    if (pointInRect(clientX, clientY, c.hit)) {
+      frontViewWindow.resizing = true;
+      frontViewWindow.resizeCorner = c.corner;
+      frontViewWindow.dragging = false;
+      frontViewWindow.resizeStartX = clientX;
+      frontViewWindow.resizeStartY = clientY;
+      frontViewWindow.resizeStartLeft = frontViewWindow.x;
+      frontViewWindow.resizeStartTop = frontViewWindow.y;
+      frontViewWindow.resizeStartW = frontViewWindow.w;
+      frontViewWindow.resizeStartH = frontViewWindow.h;
+      return true;
+    }
+  }
+
+  if (!pointInRect(clientX, clientY, rect)) return false;
+
+  const closeRect = getFrontViewCloseRect();
+  if (pointInRect(clientX, clientY, closeRect)) {
+    showMirrorView = false;
+    frontViewWindow.dragging = false;
+    frontViewWindow.resizing = false;
+    updateMirrorButtonText();
+    return true;
+  }
+
+  frontViewWindow.dragging = true;
+  frontViewWindow.dragOffsetX = clientX - frontViewWindow.x;
+  frontViewWindow.dragOffsetY = clientY - frontViewWindow.y;
+  return true;
+}
+
+function updateFrontViewDrag(clientX, clientY) {
+  if (frontViewWindow.resizing) {
+    applyFrontViewResize(clientX, clientY);
+    return true;
+  }
+
+  if (!frontViewWindow.dragging) return false;
+
+  frontViewWindow.x = clientX - frontViewWindow.dragOffsetX;
+  frontViewWindow.y = clientY - frontViewWindow.dragOffsetY;
+  clampFrontViewWindowToCanvas();
+  return true;
+}
+
+function applyFrontViewResize(clientX, clientY) {
+  const dx = clientX - frontViewWindow.resizeStartX;
+  const dy = clientY - frontViewWindow.resizeStartY;
+  const corner = frontViewWindow.resizeCorner;
+
+  let left = frontViewWindow.resizeStartLeft;
+  let top = frontViewWindow.resizeStartTop;
+  let w = frontViewWindow.resizeStartW;
+  let h = frontViewWindow.resizeStartH;
+
+  const right = left + w;
+  const bottom = top + h;
+
+  const maxW = Math.min(FRONT_VIEW_MAX_W, canvas.width - 12);
+  const maxH = Math.min(FRONT_VIEW_MAX_H, canvas.height - 12);
+
+  const east = corner === "ne" || corner === "se";
+  const west = corner === "nw" || corner === "sw";
+  const south = corner === "se" || corner === "sw";
+  const north = corner === "nw" || corner === "ne";
+
+  if (east) {
+    w = clamp(frontViewWindow.resizeStartW + dx, FRONT_VIEW_MIN_W, maxW);
+  } else if (west) {
+    w = clamp(frontViewWindow.resizeStartW - dx, FRONT_VIEW_MIN_W, maxW);
+    left = right - w;
+  }
+
+  if (south) {
+    h = clamp(frontViewWindow.resizeStartH + dy, FRONT_VIEW_MIN_H, maxH);
+  } else if (north) {
+    h = clamp(frontViewWindow.resizeStartH - dy, FRONT_VIEW_MIN_H, maxH);
+    top = bottom - h;
+  }
+
+  frontViewWindow.x = left;
+  frontViewWindow.y = top;
+  frontViewWindow.w = w;
+  frontViewWindow.h = h;
+  // Nutzergröße merken, damit drawMirrorView sie beibehält.
+  frontViewWindow.userW = w;
+  frontViewWindow.userH = h;
+
+  clampFrontViewWindowToCanvas();
+}
+
+function clampFrontViewWindowToCanvas() {
+  if (frontViewWindow.x === null || frontViewWindow.y === null) return;
+
+  const margin = 6;
+  frontViewWindow.x = clamp(frontViewWindow.x, margin, canvas.width - frontViewWindow.w - margin);
+  frontViewWindow.y = clamp(frontViewWindow.y, margin, canvas.height - frontViewWindow.h - margin);
+}
+
+function makeOrthographicFrontProjector(x, y, w, h) {
+  const cx = x + w * 0.50;
+  const groundY = y + h * 0.84;
+
+  // Truckbreite im Fenster festlegen; alles andere folgt maßstäblich.
+  const truckScreenW = Math.min(w * 0.40, 175);
+  const lateralScale = truckScreenW / truck.width;
+  const verticalScale = lateralScale * 0.92;
+
+  return {
+    x,
+    y,
+    w,
+    h,
+    cx,
+    groundY,
+    lateralScale,
+    verticalScale,
+    projectWorld(point, zValue) {
+      const local = worldToTruckFrontLocal(point);
+
+      // Frontansicht gespiegelt: links/rechts werden horizontal invertiert.
+      // Dadurch verhält sich das Fenster wie die gewünschte gespiegelte
+      // Kontrollansicht, die Sprites werden auf den Flächen ebenfalls korrekt
+      // horizontal gespiegelt.
+      return {
+        x: cx - local.lateral * lateralScale,
+        y: groundY - zValue * verticalScale,
+        forward: local.forward,
+        lateral: -local.lateral,
+        z: zValue
+      };
+    },
+    projectLocal(localX, localY, zValue) {
+      return this.projectWorld(localToWorld(truck, localX, localY), zValue);
+    }
+  };
+}
+
+function worldToTruckFrontLocal(point) {
+  const dx = point.x - truck.x;
+  const dy = point.y - truck.y;
+
+  return {
+    forward: dx * Math.cos(truck.angle) + dy * Math.sin(truck.angle),
+    lateral: -dx * Math.sin(truck.angle) + dy * Math.cos(truck.angle)
+  };
+}
+
+function frontViewSpriteLoaded(id) {
+  return !!(id && frontViewSprites[id] && frontViewSprites[id].loaded);
+}
+
+function drawFrontViewSpriteQuad(spriteId, pts) {
+  if (!frontViewSpriteLoaded(spriteId)) return false;
+
+  const sprite = frontViewSprites[spriteId].image;
+  const isTrailerSprite = String(spriteId).startsWith("trailer");
+
+  // Die Frontansicht ist geometrisch gespiegelt. Die Anhänger-Sprites sollen
+  // aber als Motiv richtig herum bleiben. Zusätzlich waren die Anhängerflächen
+  // durch die Flächen-Reihenfolge unten/oben vertauscht; deshalb werden
+  // Anhänger-Texturen in X UND Y innerhalb der Fläche korrigiert.
+  let flipTextureX = isTrailerSprite;
+  let flipTextureY = isTrailerSprite;
+
+  // Frontsprites zusätzlich horizontal spiegeln (gewünschtes Verhalten):
+  // LKW-Front und Anhänger-Stirnseite werden gespiegelt dargestellt.
+  if (spriteId === "truckFront" || spriteId === "trailerFront") {
+    flipTextureX = !flipTextureX;
+  }
+
+  drawImageInParallelogram(sprite, pts[0], pts[1], pts[3], flipTextureX, flipTextureY);
+  return true;
+}
+
+function drawImageInParallelogram(image, topLeft, topRight, bottomLeft, flipTextureX, flipTextureY) {
+  // Canvas kann Bilder per affine transform in ein Parallelogramm legen.
+  // Genau das brauchen wir hier, weil die orthographisch projizierten Boxflächen
+  // parallelogrammförmig sind.
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(topLeft.x, topLeft.y);
+  ctx.lineTo(topRight.x, topRight.y);
+  ctx.lineTo(topRight.x + bottomLeft.x - topLeft.x, topRight.y + bottomLeft.y - topLeft.y);
+  ctx.lineTo(bottomLeft.x, bottomLeft.y);
+  ctx.closePath();
+  ctx.clip();
+
+  const a = (topRight.x - topLeft.x) / image.width;
+  const b = (topRight.y - topLeft.y) / image.width;
+  const c = (bottomLeft.x - topLeft.x) / image.height;
+  const d = (bottomLeft.y - topLeft.y) / image.height;
+  const e = topLeft.x;
+  const f = topLeft.y;
+
+  ctx.transform(a, b, c, d, e, f);
+
+  if (flipTextureX || flipTextureY) {
+    ctx.translate(flipTextureX ? image.width : 0, flipTextureY ? image.height : 0);
+    ctx.scale(flipTextureX ? -1 : 1, flipTextureY ? -1 : 1);
+  }
+
+  ctx.drawImage(image, 0, 0);
+  ctx.restore();
+}
+
+function fillQuad(pts) {
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  for (let i = 1; i < pts.length; i++) {
+    ctx.lineTo(pts[i].x, pts[i].y);
+  }
+  ctx.closePath();
+  ctx.fill();
+}
+
+function strokeQuad(pts) {
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  for (let i = 1; i < pts.length; i++) {
+    ctx.lineTo(pts[i].x, pts[i].y);
+  }
+  ctx.closePath();
+  ctx.stroke();
+}
+
+function drawOrthoReferenceLines(view) {
+  ctx.save();
+  // Vertikale gestrichelte Hilfslinien entfernt
+  // Bodenlinie
+  ctx.strokeStyle = "rgba(255,255,255,0.22)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(view.x + 12, view.groundY);
+  ctx.lineTo(view.x + view.w - 12, view.groundY);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawOrthoTrailer(view) {
+  const colors = {
+    front: "#78975a",
+    rear: "#455f34",
+    left: "#4f6d39",
+    right: "#6f8d50",
+    top: "#425b2f",
+    stroke: "rgba(15,22,15,0.55)"
+  };
+
+  // Unterbau zuerst (Achsen, Räder, Drehschemel, Deichsel, Rahmen).
+  // Die seitliche lower_side_trailer_sprite wird darin pro Seite tiefenrichtig eingefügt.
+  // Die VA (Vorderansicht / Oberbau-Sprites) wird danach ÜBER dem lower_trailer_sprite gezeichnet.
+  drawOrthoTrailerUnderbody(view);
+
+  // Oberbau als Sprite über dem Unterbau. Er beginnt bei Z=34,
+  // damit darunter Platz für den Unterbau bleibt.
+  drawOrthoBox(view, trailer, 108, colors, false, {
+    bottomZ: 34,
+    sideInset: 4,
+    frontInset: 4,
+    useUpperTrailerSprites: true
+  });
+}
+
+function drawOrthoTrailerLowerPanel(view, side) {
+  // Komplettes lower_side_trailer_sprite zeichnen.
+  // Bleibt als Hilfsfunktion erhalten, falls sie an anderer Stelle genutzt wird.
+  drawOrthoTrailerLowerPanelPart(view, side, 0.0, 1.0);
+}
+
+function drawOrthoTrailerLowerPanelFront(view, side) {
+  // Vordere 4/5 der lower_side_sprite.
+  // Diese Fläche wird NACH der HA gezeichnet und liegt dadurch vor der HA.
+  drawOrthoTrailerLowerPanelPart(view, side, 0.0, 0.8);
+}
+
+function drawOrthoTrailerLowerPanelBack(view, side) {
+  // Hinteres 1/5 der lower_side_sprite.
+  // Diese Fläche wird VOR der HA gezeichnet und liegt dadurch hinter der HA.
+  drawOrthoTrailerLowerPanelPart(view, side, 0.8, 1.0);
+}
+
+function drawOrthoTrailerLowerPanelPart(view, side, t0, t1) {
+  // t0/t1 schneiden die Sprite in Fahrtrichtung:
+  // 0.0 = vorne am Anhänger, 1.0 = hinten am Anhänger.
+  const bottomZ = 0;
+  const topZ = 34;
+  const hl = trailer.length / 2 - 8;
+  const hw = trailer.width / 2 - 14;
+
+  const yEdge = side === "right" ? hw : -hw;
+
+  const fb = view.projectWorld(localToWorld(trailer,  hl, yEdge), bottomZ);
+  const rb = view.projectWorld(localToWorld(trailer, -hl, yEdge), bottomZ);
+  const ft = view.projectWorld(localToWorld(trailer,  hl, yEdge), topZ);
+  const rt = view.projectWorld(localToWorld(trailer, -hl, yEdge), topZ);
+
+  function lerpPoint(a, b, t) {
+    return {
+      x: a.x + (b.x - a.x) * t,
+      y: a.y + (b.y - a.y) * t,
+      forward: a.forward + (b.forward - a.forward) * t,
+      lateral: a.lateral + (b.lateral - a.lateral) * t,
+      z: a.z + (b.z - a.z) * t
+    };
+  }
+
+  const topA = lerpPoint(ft, rt, t0);
+  const topB = lerpPoint(ft, rt, t1);
+  const bottomA = lerpPoint(fb, rb, t0);
+  const bottomB = lerpPoint(fb, rb, t1);
+  const pts = [topA, topB, bottomB, bottomA];
+
+  const sprite = getFrontViewSpriteImage("trailerLowerSide");
+
+  ctx.save();
+  if (sprite) {
+    const sx = sprite.width * t0;
+    const sw = sprite.width * (t1 - t0);
+    drawFrontViewSpriteQuadRawCropped(sprite, pts, sx, 0, sw, sprite.height, false, false);
+  } else {
+    ctx.fillStyle = "#1a1a1a";
+    fillQuad(pts);
+  }
+  ctx.restore();
+}
+
+function drawOrthoTruckFront(view) {
+  // LKW-Front in der Frontansicht bewusst auf die gleiche sichtbare
+  // Maßgröße wie die Anhänger-Stirnseite bringen. Dadurch passen
+  // front_truck_sprite.png und front_trailer_sprite.png optisch zusammen.
+  const truckFrontW = trailer.width * 1.11;
+  const truckH = 115;
+  // LKW-Front etwas anheben, damit die Vorderräder darunter sichtbar werden.
+  const zLift = 10 / view.verticalScale;
+  const leftBottom = view.projectLocal(180, -truckFrontW / 2, zLift);
+  const rightBottom = view.projectLocal(180, truckFrontW / 2, zLift);
+  const leftTop = view.projectLocal(180, -truckFrontW / 2, truckH + zLift);
+  const rightTop = view.projectLocal(180, truckFrontW / 2, truckH + zLift);
+  const pts = [leftTop, rightTop, rightBottom, leftBottom];
+
+  // LKW-Front bewusst zuletzt zeichnen: sie verdeckt den Anhänger in der Mitte.
+  // Wenn front_truck_sprite.png vorhanden ist, ersetzt sie die Box-/Fallback-Grafik.
+  if (drawFrontViewSpriteQuad("truckFront", pts)) {
+    // Keine zusätzliche Umrandung über dem Sprite.
+    return;
+  }
+
+  const grad = ctx.createLinearGradient(leftTop.x, leftTop.y, rightBottom.x, rightBottom.y);
+  grad.addColorStop(0, "#ffffff");
+  grad.addColorStop(1, "#cfd5da");
+  ctx.fillStyle = grad;
+  fillQuad(pts);
+  ctx.strokeStyle = "rgba(10,14,18,0.98)";
+  ctx.lineWidth = 2;
+  strokeQuad(pts);
+
+  const width = rightBottom.x - leftBottom.x;
+  const height = leftBottom.y - leftTop.y;
+  const x0 = leftTop.x;
+  const y0 = leftTop.y;
+
+  // Scheibe
+  ctx.fillStyle = "#223d52";
+  ctx.fillRect(x0 + width * 0.14, y0 + height * 0.13, width * 0.72, height * 0.24);
+  ctx.strokeStyle = "rgba(170,205,225,0.55)";
+  ctx.strokeRect(x0 + width * 0.14, y0 + height * 0.13, width * 0.72, height * 0.24);
+  ctx.beginPath();
+  ctx.moveTo(x0 + width * 0.50, y0 + height * 0.13);
+  ctx.lineTo(x0 + width * 0.50, y0 + height * 0.37);
+  ctx.stroke();
+
+  // Grill und Scheinwerfer
+  ctx.fillStyle = "#30363a";
+  ctx.fillRect(x0 + width * 0.25, y0 + height * 0.54, width * 0.50, height * 0.17);
+  ctx.fillStyle = "#ffe7a0";
+  ctx.fillRect(x0 + width * 0.08, y0 + height * 0.61, width * 0.13, height * 0.08);
+  ctx.fillRect(x0 + width * 0.79, y0 + height * 0.61, width * 0.13, height * 0.08);
+  ctx.fillStyle = "#202428";
+  ctx.fillRect(x0 + width * 0.05, y0 + height * 0.80, width * 0.90, height * 0.10);
+
+  // Hinweis: Die Vorderreifen des LKW werden separat in drawOrthoTruckWheels()
+  // mit derselben 12-Eck-Sprite-Darstellung wie der Anhänger gezeichnet.
+}
+
+function drawOrthoBox(view, obj, height, colors, emphasizeOverhang, options) {
+  options = options || {};
+
+  const bottomZ = options.bottomZ ?? 0;
+  const sideInset = options.sideInset ?? 0;
+  const frontInset = options.frontInset ?? 0;
+  const hl = obj.length / 2 - frontInset;
+  const hw = obj.width / 2 - sideInset;
+
+  const corner = {
+    flb: view.projectWorld(localToWorld(obj,  hl, -hw), bottomZ),
+    frb: view.projectWorld(localToWorld(obj,  hl,  hw), bottomZ),
+    rrb: view.projectWorld(localToWorld(obj, -hl,  hw), bottomZ),
+    rlb: view.projectWorld(localToWorld(obj, -hl, -hw), bottomZ),
+    flt: view.projectWorld(localToWorld(obj,  hl, -hw), height),
+    frt: view.projectWorld(localToWorld(obj,  hl,  hw), height),
+    rrt: view.projectWorld(localToWorld(obj, -hl,  hw), height),
+    rlt: view.projectWorld(localToWorld(obj, -hl, -hw), height)
+  };
+
+  const isTrailer = obj === trailer;
+  const useUpperTrailerSprites = isTrailer && options.useUpperTrailerSprites;
+  const faces = [
+    { name: "rear", keys: ["rlb", "rrb", "rrt", "rlt"], color: colors.rear, sprite: useUpperTrailerSprites ? "trailerRear" : null },
+    { name: "left", keys: ["flb", "rlb", "rlt", "flt"], color: colors.left, sprite: useUpperTrailerSprites ? "trailerSideLeft" : null },
+    { name: "right", keys: ["frb", "rrb", "rrt", "frt"], color: colors.right, sprite: useUpperTrailerSprites ? "trailerSideRight" : null },
+    { name: "top", keys: ["flt", "frt", "rrt", "rlt"], color: colors.top, sprite: null },
+    { name: "front", keys: ["flb", "frb", "frt", "flt"], color: colors.front, sprite: useUpperTrailerSprites ? "trailerFront" : null }
+  ];
+
+  // Orthografisch: keine perspektivische Skalierung. Nur die Reihenfolge nach
+  // Tiefe entscheidet, welche Flächen hinten/vorne liegen.
+  faces.sort((a, b) => {
+    const da = a.keys.reduce((sum, k) => sum + corner[k].forward, 0) / a.keys.length;
+    const db = b.keys.reduce((sum, k) => sum + corner[k].forward, 0) / b.keys.length;
+    return da - db;
+  });
+
+  for (const face of faces) {
+    const pts = face.keys.map(k => corner[k]);
+    const spriteDrawn = drawFrontViewSpriteQuad(face.sprite, pts);
+
+    if (!spriteDrawn) {
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) {
+        ctx.lineTo(pts[i].x, pts[i].y);
+      }
+      ctx.closePath();
+      ctx.fillStyle = face.color;
+      ctx.fill();
+
+      // Fallback-Boxen bekommen eine dezente Kontur. Sprites dagegen nicht.
+      ctx.strokeStyle = colors.stroke;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+  }
+
+  // Keine roten Überstandsmarkierungen und keine zusätzliche Sprite-Umrandung.
+}
+
+function drawOrthoTrailerSidePanels(view, c) {
+  const leftShift = Math.abs(c.rlt.x - c.flt.x);
+  const rightShift = Math.abs(c.rrt.x - c.frt.x);
+  const useRight = rightShift >= leftShift;
+
+  const aTop = useRight ? c.frt : c.flt;
+  const bTop = useRight ? c.rrt : c.rlt;
+  const aBottom = useRight ? c.frb : c.flb;
+  const bBottom = useRight ? c.rrb : c.rlb;
+
+  if (Math.abs(bTop.x - aTop.x) < 3) return;
+
+  ctx.save();
+  ctx.strokeStyle = "rgba(30,40,30,0.42)";
+  ctx.lineWidth = 1;
+  for (let i = 1; i < 5; i++) {
+    const t = i / 5;
+    ctx.beginPath();
+    ctx.moveTo(aTop.x + (bTop.x - aTop.x) * t, aTop.y + (bTop.y - aTop.y) * t);
+    ctx.lineTo(aBottom.x + (bBottom.x - aBottom.x) * t, aBottom.y + (bBottom.y - aBottom.y) * t);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawOrthoOverhangMarkers(view, c) {
+  // Rote Überstandsstriche wurden entfernt.
+}
+
+function drawOrthoTruckWheels(view) {
+  // Vorderreifen des LKW – gleiche 12-Eck-Sprite-Darstellung wie der Anhänger
+  // (tire_front_sprite für die Lauffläche, tire_side_sprite für die Innenseite).
+  // Position EXAKT wie die Vorderräder in der TopView (drawTruck):
+  //   drawWheel(130, -truck.width / 3 - 6, ...)
+  //   drawWheel(130,  truck.width / 3 + 6, ...)
+  const frontAxleX = 130;
+  // Etwas weiter außen als in der TopView, damit die Reifen unten an den Ecken
+  // hinter der Front-Sprite hervorschauen (Sprite verdeckt die Innenseite).
+  const wheelLeftY = -truck.width / 2 + 12;
+  const wheelRightY = truck.width / 2 - 12;
+  const steer = truck.steeringAngle || 0;
+
+  ctx.save();
+  drawOrthoWheelBlock(view, truck, frontAxleX, wheelLeftY, 14, steer, "tireTruckSide", "left");
+  drawOrthoWheelBlock(view, truck, frontAxleX, wheelRightY, 14, steer, "tireTruckSide", "right");
+  ctx.restore();
+}
+
+function drawOrthoTrailerUnderbody(view) {
+  const rearAxleX = GLOBAL.trailerRearAxleX;
+  const frontAxleX = trailer.length / 2 - GLOBAL.trailerFrontAxleInset;
+  const frameLeftY = -trailer.width / 2 + 12;
+  const frameRightY = trailer.width / 2 - 12;
+  const wheelLeftY = -trailer.width / 2 + 14;
+  const wheelRightY = trailer.width / 2 - 14;
+
+  ctx.save();
+
+  // Hauptrahmen / Längsträger
+  ctx.strokeStyle = "rgba(25,25,25,0.96)";
+  ctx.lineWidth = 4;
+  ctx.lineCap = "round";
+  drawOrthoVehicleLine(view, trailer, -trailer.length / 2 + 18, frameLeftY, 28, trailer.length / 2 - 18, frameLeftY, 28);
+  drawOrthoVehicleLine(view, trailer, -trailer.length / 2 + 18, frameRightY, 28, trailer.length / 2 - 18, frameRightY, 28);
+
+  // Querträger
+  ctx.strokeStyle = "rgba(35,35,35,0.96)";
+  ctx.lineWidth = 3;
+  for (const lx of [-105, -35, 35, frontAxleX]) {
+    drawOrthoVehicleLine(view, trailer, lx, frameLeftY, 25, lx, frameRightY, 25);
+  }
+
+  // Vorderachse des Anhängers dreht sich mit Deichsel/Drehschemel.
+  const axleAngle = normalizeAngle(trailer.drawbarAngle - trailer.angle);
+  const cosA = Math.cos(axleAngle);
+  const sinA = Math.sin(axleAngle);
+
+  function frontAxlePoint(offsetY) {
+    return {
+      x: frontAxleX - offsetY * sinA,
+      y: offsetY * cosA
+    };
+  }
+
+  const frontL = frontAxlePoint(wheelLeftY);
+  const frontR = frontAxlePoint(wheelRightY);
+
+  function wheelDepth(obj, localX, localY, z) {
+    return view.projectWorld(localToWorld(obj, localX, localY), z).forward;
+  }
+
+  function drawPanelsBackSorted() {
+    const panels = [
+      { side: "left", depth: view.projectWorld(localToWorld(trailer, 0, -trailer.width / 2), 17).forward },
+      { side: "right", depth: view.projectWorld(localToWorld(trailer, 0, trailer.width / 2), 17).forward }
+    ];
+    // weit hinten zuerst
+    panels.sort((a, b) => a.depth - b.depth);
+    for (const p of panels) drawOrthoTrailerLowerPanelBack(view, p.side);
+  }
+
+  function drawPanelsFrontSorted() {
+    const panels = [
+      { side: "left", depth: view.projectWorld(localToWorld(trailer, 0, -trailer.width / 2), 17).forward },
+      { side: "right", depth: view.projectWorld(localToWorld(trailer, 0, trailer.width / 2), 17).forward }
+    ];
+    // vordere 80% sollen ÜBER den Rädern liegen, deshalb ebenfalls hinten -> vorne zeichnen.
+    panels.sort((a, b) => a.depth - b.depth);
+    for (const p of panels) drawOrthoTrailerLowerPanelFront(view, p.side);
+  }
+
+  function drawRearWheelsSorted() {
+    const wheels = [
+      {
+        side: "left",
+        depth: wheelDepth(trailer, rearAxleX, wheelLeftY, 14),
+        draw() { drawOrthoWheelBlock(view, trailer, rearAxleX, wheelLeftY, 14, 0, null, "left"); }
+      },
+      {
+        side: "right",
+        depth: wheelDepth(trailer, rearAxleX, wheelRightY, 14),
+        draw() { drawOrthoWheelBlock(view, trailer, rearAxleX, wheelRightY, 14, 0, null, "right"); }
+      }
+    ];
+    // weit hinten zuerst, näher zur Kamera zuletzt.
+    wheels.sort((a, b) => a.depth - b.depth);
+    for (const w of wheels) w.draw();
+  }
+
+  function drawFrontWheelsSorted() {
+    const wheels = [
+      {
+        side: "left",
+        depth: wheelDepth(trailer, frontL.x, frontL.y, 14),
+        draw() { drawOrthoWheelBlock(view, trailer, frontL.x, frontL.y, 14, axleAngle, null, "left"); }
+      },
+      {
+        side: "right",
+        depth: wheelDepth(trailer, frontR.x, frontR.y, 14),
+        draw() { drawOrthoWheelBlock(view, trailer, frontR.x, frontR.y, 14, axleAngle, null, "right"); }
+      }
+    ];
+    // Wichtig bei stark eingedrehter Deichsel: der näher liegende Reifen muss vorne liegen.
+    wheels.sort((a, b) => a.depth - b.depth);
+    for (const w of wheels) w.draw();
+  }
+
+  // Hintere 20% der lower_side_sprite liegen HINTER der HA.
+  drawPanelsBackSorted();
+
+  // HA ohne gezeichnete Achse. Nur die Räder, tiefensortiert.
+  drawRearWheelsSorted();
+
+  // Vordere 80% der lower_side_sprite liegen VOR / ÜBER der HA.
+  drawPanelsFrontSorted();
+
+  // VA ohne gezeichnete Achse. Räder tiefensortiert.
+  drawFrontWheelsSorted();
+
+  // Drehschemel / vorderer Träger ohne sichtbaren Kreis.
+  ctx.strokeStyle = "rgba(8,8,8,0.98)";
+  ctx.lineWidth = 5;
+  drawOrthoVehicleLine(view, trailer, frontAxleX - 18, frameLeftY, 31, frontAxleX + 18, frameRightY, 31);
+  drawOrthoVehicleLine(view, trailer, frontAxleX - 18, frameRightY, 31, frontAxleX + 18, frameLeftY, 31);
+
+  ctx.restore();
+}
+
+function drawOrthoVehicleLine(view, obj, x1, y1, z1, x2, y2, z2) {
+  const a = view.projectWorld(localToWorld(obj, x1, y1), z1);
+  const b = view.projectWorld(localToWorld(obj, x2, y2), z2);
+  ctx.beginPath();
+  ctx.moveTo(a.x, a.y);
+  ctx.lineTo(b.x, b.y);
+  ctx.stroke();
+}
+
+function drawOrthoWheelBlock(view, obj, localX, localY, z, steerAngle, sideSpriteId, wheelSide, phase) {
+  drawOrthoWheelBox(view, obj, localX, localY, z, steerAngle, sideSpriteId, wheelSide, phase);
+}
+
+function getFrontViewSpriteImage(id) {
+  const entry = frontViewSprites[id];
+  if (!entry || !entry.loaded || !entry.image) return null;
+  return entry.image;
+}
+
+function drawSpriteCentered(image, x, y, w, h) {
+  ctx.drawImage(image, x - w / 2, y - h / 2, w, h);
+}
+
+function drawOrthoWheelBox(view, obj, localX, localY, z, steerAngle, sideSpriteId, wheelSide, phase) {
+  // Reifen als 12-Eck-Zylinder:
+  // - die Lauffläche besteht aus 12 kleinen Segmenten mit tire_front_sprite.png
+  // - die sichtbare Seitenfläche nutzt tire_side_sprite.png
+  // Dadurch wirkt der Reifen runder, bleibt aber orthografisch und sprite-basiert.
+  // phase: undefined = alles zeichnen, "sides_only" = nur Seitenflächen, "tread_only" = nur Lauffläche.
+  steerAngle = steerAngle || 0;
+  const center = view.projectWorld(localToWorld(obj, localX, localY), z);
+
+const frontSprite =
+  (sideSpriteId === "tireTruckSide"
+    ? getFrontViewSpriteImage("tireTruckFront")
+    : null) ||
+  getFrontViewSpriteImage("tireFront");
+
+// Optional eigene Seitentextur ...
+const outerSideSprite =
+  (sideSpriteId && getFrontViewSpriteImage(sideSpriteId)) ||
+  getFrontViewSpriteImage("tireSide");
+
+// Innenseite ...
+const innerSideSprite =
+  getFrontViewSpriteImage("tireInside") || getFrontViewSpriteImage("tireSide");
+
+  const radiusX = 12;
+  const radiusZ = 18;
+  const halfWidthY = 6.5;
+  const segments = 18;
+
+  // Sichtbarkeit der Reifen-Seitenfläche: ergibt sich aus dem Winkel der
+  // Reifen-Laufrichtung relativ zur LKW-Blickrichtung. Der Lenkeinschlag
+  // (steerAngle) wird mit einbezogen, damit gelenkte Vorderräder in der
+  // Frontansicht ihre Seite zeigen.
+  const angleToTruck = Math.abs(normalizeAngle(obj.angle + steerAngle - truck.angle));
+  const sideVisible = Math.min(1, Math.abs(Math.sin(angleToTruck)) * 1.35);
+
+  ctx.save();
+
+  // Bodenschatten-Oval entfernt.
+
+  const wheelFaces = [];
+
+  const cosS = Math.cos(steerAngle);
+  const sinS = Math.sin(steerAngle);
+
+  function wheelPoint(xOffset, yOffset, zOffset) {
+    // Lenkeinschlag: Reifen um seine Hochachse (Z) drehen.
+    const rx = xOffset * cosS - yOffset * sinS;
+    const ry = xOffset * sinS + yOffset * cosS;
+    return view.projectWorld(
+      localToWorld(obj, localX + rx, localY + ry),
+      z + zOffset
+    );
+  }
+
+  // Seitenflächen (Scheiben) als eigene Flächen vorbereiten, damit sie
+  // gemeinsam mit den Laufflächen-Segmenten nach Tiefe sortiert werden.
+  // Dadurch liegt die hintere Seite ganz hinten und die Lauffläche (tire_front)
+  // immer ÜBER der vorderen Seitenscheibe – man sieht also Front + innere Seite,
+  // nicht zwei volle Scheiben.
+  function buildSideFace(sideOffset) {
+    const topLeft = wheelPoint(-radiusX, sideOffset, radiusZ);
+    const topRight = wheelPoint(radiusX, sideOffset, radiusZ);
+    const bottomRight = wheelPoint(radiusX, sideOffset, -radiusZ);
+    const bottomLeft = wheelPoint(-radiusX, sideOffset, -radiusZ);
+    const pts = [topLeft, topRight, bottomRight, bottomLeft];
+    const depth = (topLeft.forward + topRight.forward + bottomRight.forward + bottomLeft.forward) / 4;
+
+    // Physische Zuordnung der Scheibe (stabil, unabhängig von der Drehung):
+    // - linkes Rad:  Außenseite = -Y-Scheibe (sideOffset < 0), Innenseite = +Y
+    // - rechtes Rad: Außenseite = +Y-Scheibe (sideOffset > 0), Innenseite = -Y
+    let isInner;
+    if (wheelSide === "left") {
+      isInner = sideOffset > 0;
+    } else if (wheelSide === "right") {
+      isInner = sideOffset < 0;
+    } else {
+      isInner = (localY >= 0) ? (sideOffset < 0) : (sideOffset > 0);
+    }
+    return { pts, depth, type: "side", isInner, sideOffset };
+  }
+
+  if (sideVisible > 0.18) {
+    wheelFaces.push(buildSideFace(halfWidthY));
+    wheelFaces.push(buildSideFace(-halfWidthY));
+  }
+
+  // 12 kleine Laufflächen-Segmente rund um den Reifen.
+  for (let i = 0; i < segments; i++) {
+    const a1 = -Math.PI / 2 + wheelRotation + (i / segments) * Math.PI * 2;
+    const a2 = -Math.PI / 2 + wheelRotation + ((i + 1) / segments) * Math.PI * 2;
+
+    const x1 = Math.cos(a1) * radiusX;
+    const z1 = Math.sin(a1) * radiusZ;
+    const x2 = Math.cos(a2) * radiusX;
+    const z2 = Math.sin(a2) * radiusZ;
+
+    const p1 = wheelPoint(x1, -halfWidthY, z1);
+    const p2 = wheelPoint(x1,  halfWidthY, z1);
+    const p3 = wheelPoint(x2,  halfWidthY, z2);
+    const p4 = wheelPoint(x2, -halfWidthY, z2);
+
+    const depth = (p1.forward + p2.forward + p3.forward + p4.forward) / 4;
+    wheelFaces.push({ pts: [p1, p2, p3, p4], depth, type: "tread" });
+  }
+
+  // Hinten -> vorne. Bei gleicher Tiefe gilt bewusst:
+  // 1. tire_inside_sprite zuerst,
+  // 2. tire_front_sprite danach,
+  // 3. tire_side_sprite zuletzt.
+  // Dadurch liegt die Außenseite nie hinter der Innenseite.
+  function faceLayer(face) {
+    if (face.type === "side" && face.isInner) return 0;
+    if (face.type === "tread") return 1;
+    if (face.type === "side" && !face.isInner) return 2;
+    return 1;
+  }
+
+  wheelFaces.sort((a, b) => {
+    if (Math.abs(a.depth - b.depth) > 0.0001) return a.depth - b.depth;
+    return faceLayer(a) - faceLayer(b);
+  });
+
+  const sideAlpha = 1;
+
+  for (const face of wheelFaces) {
+    if (phase === "sides_only" && face.type !== "side") continue;
+    if (phase === "tread_only" && face.type !== "tread") continue;
+    if (face.type === "side") {
+      ctx.save();
+      ctx.globalAlpha = sideAlpha;
+      const faceSprite = face.isInner ? innerSideSprite : outerSideSprite;
+      if (faceSprite) {
+        // tire_side_sprite und tire_inside_sprite drehen optisch mit.
+        // Wichtig: Die rechte und linke Reifenflanke laufen aus Sicht der Kamera
+        // entgegengesetzt, deshalb wird die Rotation je nach physischer Seite gespiegelt.
+        const sideRotation = wheelRotation;
+        const rotatedFaceSprite = getRotatedWheelSideSprite(faceSprite, sideRotation);
+        drawFrontViewSpriteQuadRaw(rotatedFaceSprite, face.pts, false, false);
+      } else {
+        ctx.fillStyle = face.isInner ? "#141414" : "#050505";
+        fillQuad(face.pts);
+        ctx.strokeStyle = "rgba(90,90,90,0.8)";
+        ctx.lineWidth = 1.5;
+        strokeQuad(face.pts);
+      }
+      ctx.restore();
+    } else {
+      if (frontSprite) {
+        drawFrontViewSpriteQuadRaw(frontSprite, face.pts, false, false);
+      } else {
+        ctx.fillStyle = "#050505";
+        fillQuad(face.pts);
+      }
+    }
+  }
+
+  // Keine schwarzen Konturlinien mehr auf der Lauffläche, damit oben und unten
+  // bei tire_front_sprite keine schwarze Linie entsteht.
+
+  ctx.restore();
+}
+
+
+const rotatedWheelSideSpriteCache = new Map();
+
+function getRotatedWheelSideSprite(image, angle) {
+  // Dreht die komplette Reifen-Seitenfläche als Textur.
+  // Dadurch drehen tire_side_sprite.png, tire_inside_sprite.png und
+  // tire_truck_side_sprite.png sichtbar mit der Fahrbewegung mit.
+  if (!image) return image;
+
+  const step = Math.round(angle / (Math.PI / 36)); // 72 Stufen pro Umdrehung
+  const key = image.src + "|" + step;
+  const cached = rotatedWheelSideSpriteCache.get(key);
+  if (cached) return cached;
+
+const canvasTmp = document.createElement("canvas");
+canvasTmp.width = image.width;
+canvasTmp.height = image.height;
+
+const c = canvasTmp.getContext("2d");
+c.clearRect(0, 0, canvasTmp.width, canvasTmp.height);
+c.translate(canvasTmp.width / 2, canvasTmp.height / 2);
+  c.rotate(step * (Math.PI / 36));
+  c.drawImage(image, -image.width / 2, -image.height / 2);
+
+  rotatedWheelSideSpriteCache.set(key, canvasTmp);
+
+  // Cache begrenzen, damit beim langen Fahren nicht unendlich viele Canvases entstehen.
+  if (rotatedWheelSideSpriteCache.size > 360) {
+    const firstKey = rotatedWheelSideSpriteCache.keys().next().value;
+    rotatedWheelSideSpriteCache.delete(firstKey);
+  }
+
+  return canvasTmp;
+}
+
+function drawFrontViewSpriteQuadRaw(sprite, pts, flipTextureX, flipTextureY) {
+  drawImageInParallelogram(sprite, pts[0], pts[1], pts[3], flipTextureX, flipTextureY);
+}
+
+function drawFrontViewSpriteQuadRawCropped(sprite, pts, sx, sy, sw, sh, flipTextureX, flipTextureY) {
+  drawImageCropInParallelogram(sprite, pts[0], pts[1], pts[3], sx, sy, sw, sh, flipTextureX, flipTextureY);
+}
+
+function drawImageCropInParallelogram(image, topLeft, topRight, bottomLeft, sx, sy, sw, sh, flipTextureX, flipTextureY) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(topLeft.x, topLeft.y);
+  ctx.lineTo(topRight.x, topRight.y);
+  ctx.lineTo(topRight.x + bottomLeft.x - topLeft.x, topRight.y + bottomLeft.y - topLeft.y);
+  ctx.lineTo(bottomLeft.x, bottomLeft.y);
+  ctx.closePath();
+  ctx.clip();
+
+  const a = (topRight.x - topLeft.x) / sw;
+  const b = (topRight.y - topLeft.y) / sw;
+  const c = (bottomLeft.x - topLeft.x) / sh;
+  const d = (bottomLeft.y - topLeft.y) / sh;
+  const e = topLeft.x;
+  const f = topLeft.y;
+
+  ctx.transform(a, b, c, d, e, f);
+
+  if (flipTextureX || flipTextureY) {
+    ctx.translate(flipTextureX ? sw : 0, flipTextureY ? sh : 0);
+    ctx.scale(flipTextureX ? -1 : 1, flipTextureY ? -1 : 1);
+  }
+
+  ctx.drawImage(image, sx, sy, sw, sh, 0, 0, sw, sh);
+  ctx.restore();
+}
+
+function drawOrthoTrailerWheels(view) {
+  // Alt-Funktion bleibt als Alias bestehen, falls ältere Aufrufe ergänzt werden.
+  drawOrthoTrailerUnderbody(view);
+}
+
+function drawOrthoDrawbar(view) {
+  const hitch = getHitchPoint();
+  const axle = {
+    x: trailer.frontAxleX ?? trailer.x + Math.cos(trailer.angle) * (trailer.length / 2 - GLOBAL.trailerFrontAxleInset),
+    y: trailer.frontAxleY ?? trailer.y + Math.sin(trailer.angle) * (trailer.length / 2 - GLOBAL.trailerFrontAxleInset)
+  };
+
+  const hitchPoint = view.projectWorld(hitch, 20);
+
+  // Deichsel als V-Konstruktion, an den echten Drehschemel-/Hitch-Punkten ausgerichtet.
+  const spread = 17;
+  const leftAxle = {
+    x: axle.x + Math.cos(trailer.drawbarAngle + Math.PI / 2) * spread,
+    y: axle.y + Math.sin(trailer.drawbarAngle + Math.PI / 2) * spread
+  };
+  const rightAxle = {
+    x: axle.x + Math.cos(trailer.drawbarAngle - Math.PI / 2) * spread,
+    y: axle.y + Math.sin(trailer.drawbarAngle - Math.PI / 2) * spread
+  };
+
+  const a = view.projectWorld(leftAxle, 22);
+  const b = view.projectWorld(rightAxle, 22);
+
+  ctx.save();
+  ctx.strokeStyle = "rgba(8,8,8,0.98)";
+  ctx.lineWidth = 4;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(hitchPoint.x, hitchPoint.y);
+  ctx.lineTo(a.x, a.y);
+  ctx.moveTo(hitchPoint.x, hitchPoint.y);
+  ctx.lineTo(b.x, b.y);
+  ctx.stroke();
+
+  ctx.fillStyle = "rgba(15,15,15,0.98)";
+  ctx.beginPath();
+  ctx.arc(hitchPoint.x, hitchPoint.y, 4, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function drawOrthoOverlayText(view) {
+  const rel = normalizeAngle(trailer.angle - truck.angle);
+  ctx.save();
+  ctx.fillStyle = "rgba(0,0,0,0.58)";
+  roundedRectPath(view.x + 10, view.y + 8, 225, 24, 12);
+  ctx.fill();
+  ctx.fillStyle = "rgba(255,255,255,0.95)";
+  ctx.font = "bold 12px Arial";
+  ctx.textAlign = "left";
+  ctx.fillText("FRONTANSICHT ORTHO · GESPIEGELT", view.x + 19, view.y + 24);
+
+  ctx.fillStyle = "rgba(0,0,0,0.45)";
+  ctx.fillRect(view.x + 8, view.y + view.h - 25, view.w - 16, 18);
+  ctx.fillStyle = "rgba(255,255,255,0.92)";
+  ctx.font = "bold 11px Arial";
+  const spriteInfo = frontViewSpriteLoaded("truckFront") || frontViewSpriteLoaded("trailerFront") || frontViewSpriteLoaded("trailerSideLeft")
+    ? "Sprites aktiv"
+    : "Sprite-Fallback";
+  ctx.fillText("Knickwinkel " + Math.round(rel * 180 / Math.PI) + "° · " + spriteInfo, view.x + 14, view.y + view.h - 12);
+  ctx.restore();
+}
+
+function roundedRectPath(x, y, w, h, r) {
+  const radius = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + w - radius, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+  ctx.lineTo(x + w, y + h - radius);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+  ctx.lineTo(x + radius, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
 }
 
 function drawHud() {
@@ -3032,5 +4386,5 @@ function escapeHtml(value) {
     .replace(/'/g, "&#039;");
 }
 </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a12534357f1df192',t:'MTc4MjU3MTE5NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a125d1a43931159b',t:'MTc4MjU3NzY0NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1266b396e6362c8',t:'MTc4MjU4MzkzNA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1269d9beabfb8a5',t:'MTc4MjU4NTk5OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
