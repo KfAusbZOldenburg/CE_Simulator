@@ -4728,7 +4728,25 @@ function loadHighscores(ownName) {
   });
 }
 
+function getBestHighscores(list) {
+  if (!Array.isArray(list)) return [];
+
+  const seenNames = new Set();
+
+  // Erst nach Punkten sortieren, dann pro Name nur das beste Ergebnis behalten.
+  // Bei Punktgleichheit bleibt die bisherige Reihenfolge erhalten.
+  return list.slice().sort(function (a, b) {
+    return Number(b.punkte) - Number(a.punkte);
+  }).filter(function (entry) {
+    const normalizedName = String(entry.name || "").trim().toLowerCase();
+    if (seenNames.has(normalizedName)) return false;
+    seenNames.add(normalizedName);
+    return true;
+  });
+}
+
 function renderHighscores(list, ownName) {
+  list = getBestHighscores(list);
   highscoreList.innerHTML = "";
 
   if (!Array.isArray(list) || list.length === 0) {
