@@ -844,7 +844,8 @@ h1 {
 
     <div class="speedPanel">
       <div id="speedDisplay">Max. Geschwindigkeit: 4</div>
-      <input type="range" id="speedSlider" min="1" max="10" value="4">
+      <input type="range" id="speedSlider" min="1" max="10" step="1" value="4" aria-label="Maximale Geschwindigkeit" aria-describedby="speedShortcutHint">
+      <small id="speedShortcutHint">Tastatur: + schneller / − langsamer</small>
       <button id="followBtn">Zentrieren</button>
       <button id="guideBtn">Hilfslinien AUS</button>
       <button id="mirrorToggleBtn">Frontansicht EIN</button>
@@ -1795,10 +1796,34 @@ gearDBtn.addEventListener("click", function () {
   updateGearButtons();
 });
 
-speedSlider.addEventListener("input", function () {
-  maxSpeed = Number(speedSlider.value);
+function setMaxSpeed(value) {
+  maxSpeed = clamp(value, Number(speedSlider.min), Number(speedSlider.max));
+  speedSlider.value = String(maxSpeed);
   speedDisplay.textContent = "Max. Geschwindigkeit: " + maxSpeed;
+}
+
+speedSlider.addEventListener("input", function () {
+  setMaxSpeed(Number(speedSlider.value));
 });
+
+function handleSpeedShortcut(e) {
+  if (e.key !== "+" && e.key !== "-") return false;
+  if (e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return false;
+  if (!gameRunning || controls.style.display === "none") return false;
+
+  const focused = document.activeElement;
+  if (focused && (focused.isContentEditable ||
+      (focused !== speedSlider && /^(INPUT|TEXTAREA|SELECT)$/.test(focused.tagName)))) {
+    return false;
+  }
+
+  e.preventDefault();
+  // Ein Schritt pro Tastendruck, auch wenn die Taste gehalten wird.
+  if (!e.repeat) {
+    setMaxSpeed(maxSpeed + (e.key === "+" ? 1 : -1));
+  }
+  return true;
+}
 
 followBtn.addEventListener("click", function () {
   followTruck = true;
@@ -1823,6 +1848,8 @@ mirrorToggleBtn.addEventListener("click", function () {
 });
 
 document.addEventListener("keydown", function (e) {
+
+  if (handleSpeedShortcut(e)) return;
 
   if (
     document.activeElement === playerNameInput ||
