@@ -4725,6 +4725,8 @@ function loadHighscores(ownName) {
   return new Promise(function (resolve) {
     const callbackName = "highscoreCallback_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
     const script = document.createElement("script");
+    let settled = false;
+    let timeoutId = null;
 
     const cleanup = function () {
       if (script.parentNode) {
@@ -4733,18 +4735,35 @@ function loadHighscores(ownName) {
       delete window[callbackName];
     };
 
-    window[callbackName] = function (list) {
+    const finish = function () {
+      if (settled) return false;
+      settled = true;
+      if (timeoutId !== null) clearTimeout(timeoutId);
       cleanup();
+      return true;
+    };
+
+    window[callbackName] = function (list) {
+      if (!finish()) return;
       renderHighscores(list, ownName);
       highscoreStatus.textContent = "";
       resolve();
     };
 
     script.onerror = function () {
-      cleanup();
+      if (!finish()) return;
       highscoreStatus.textContent = "Bestenliste konnte nicht geladen werden.";
       resolve();
     };
+
+    // Falls ein mobiler Browser die externe Anfrage blockiert oder eine
+    // zwischengespeicherte HTML-Seite liefert, darf die Anzeige nicht
+    // dauerhaft im Ladezustand bleiben.
+    timeoutId = setTimeout(function () {
+      if (!finish()) return;
+      highscoreStatus.textContent = "Bestenliste konnte nicht geladen werden.";
+      resolve();
+    }, 10000);
 
     script.src = HIGHSCORE_URL +
       "?aufgabe=" + encodeURIComponent(taskId) +

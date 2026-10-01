@@ -1,4 +1,4 @@
-const CACHE_NAME = "ce-simultor-v0.4.1";
+const CACHE_NAME = "ce-simultor-v0.4.2";
 
 const CORE_ASSETS = [
   "./",
@@ -32,6 +32,12 @@ self.addEventListener("activate", function (event) {
 
 self.addEventListener("fetch", function (event) {
   if (event.request.method !== "GET") return;
+
+  // Externe Dienste wie die Google-Apps-Script-Bestenliste dürfen nicht
+  // auf die lokale index.html zurückfallen. Das kann einen gültigen JSONP-
+  // Rückruf verdecken und die Anzeige im Ladezustand festhalten.
+  const requestUrl = new URL(event.request.url);
+  if (requestUrl.origin !== self.location.origin) return;
 
   event.respondWith(
     fetch(event.request).then(function (response) {
