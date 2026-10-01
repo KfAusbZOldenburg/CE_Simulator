@@ -825,6 +825,7 @@ h1 {
     </div>
 
     <div id="highscoreStatus"></div>
+    <button id="retryHighscoreBtn" hidden>Erneut laden</button>
     <div id="highscoreList"></div>
   </div>
 
@@ -1277,6 +1278,7 @@ const FRONT_VIEW_HANDLE_SIZE = 60;
 let lastResult = null;
 let highscoreAlreadyShown = false;
 let highscoreViewTaskId = null;
+let highscoreLoadController = null;
 let straightSamples = 0;
 let straightErrorSum = 0;
 let straightTargetY = null;
@@ -4716,62 +4718,50 @@ function saveHighscore() {
     saveHighscoreBtn.disabled = false;
   });
 }
-function loadHighscores(ownName) {
+async function loadHighscores(ownName) {
   const taskId = highscoreViewTaskId || (lastResult ? lastResult.aufgabe : null);
-  if (!taskId) return Promise.resolve();
+  if (!taskId) return;
+
+  if (highscoreLoadController) highscoreLoadController.abort();
+  const controller = new AbortController();
+  highscoreLoadController = controller;
+  const retryButton = document.getElementById("retryHighscoreBtn");
+  retryButton.hidden = true;
+  retryButton.onclick = function () { return loadHighscores(ownName); };
 
   highscoreStatus.textContent = "Bestenliste wird geladen...";
 
-  return new Promise(function (resolve) {
-    const callbackName = "highscoreCallback_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
-    const script = document.createElement("script");
-    let settled = false;
-    let timeoutId = null;
+  const timeoutId = setTimeout(function () { controller.abort(); }, 15000);
 
-    const cleanup = function () {
-      if (script.parentNode) {
-        script.parentNode.removeChild(script);
-      }
-      delete window[callbackName];
-    };
-
-    const finish = function () {
-      if (settled) return false;
-      settled = true;
-      if (timeoutId !== null) clearTimeout(timeoutId);
-      cleanup();
-      return true;
-    };
-
-    window[callbackName] = function (list) {
-      if (!finish()) return;
-      renderHighscores(list, ownName);
-      highscoreStatus.textContent = "";
-      resolve();
-    };
-
-    script.onerror = function () {
-      if (!finish()) return;
-      highscoreStatus.textContent = "Bestenliste konnte nicht geladen werden.";
-      resolve();
-    };
-
-    // Falls ein mobiler Browser die externe Anfrage blockiert oder eine
-    // zwischengespeicherte HTML-Seite liefert, darf die Anzeige nicht
-    // dauerhaft im Ladezustand bleiben.
-    timeoutId = setTimeout(function () {
-      if (!finish()) return;
-      highscoreStatus.textContent = "Bestenliste konnte nicht geladen werden.";
-      resolve();
-    }, 10000);
-
-    script.src = HIGHSCORE_URL +
+  try {
+    // Die öffentliche JSON-Abfrage benötigt keine Google-Anmeldung.
+    // Cookies würden bei eingebundenen Scripts automatisch mitgesendet.
+    const response = await fetch(HIGHSCORE_URL +
       "?aufgabe=" + encodeURIComponent(taskId) +
-      "&callback=" + encodeURIComponent(callbackName) +
-      "&t=" + Date.now();
-
-    document.body.appendChild(script);
-  });
+      "&t=" + Date.now(), {
+        mode: "cors",
+        credentials: "omit",
+        redirect: "follow",
+        cache: "no-store",
+        signal: controller.signal
+      });
+    if (!response.ok) throw new Error("HTTP " + response.status);
+    const list = await response.json();
+    if (!Array.isArray(list)) throw new Error("Ungültige Bestenliste");
+    if (highscoreLoadController !== controller || controller.signal.aborted) return;
+    renderHighscores(list, ownName);
+    highscoreStatus.textContent = "";
+  } catch (error) {
+    if (highscoreLoadController !== controller) return;
+    highscoreStatus.textContent = controller.signal.aborted
+      ? "Die Verbindung zur Bestenliste hat zu lange gedauert. Bitte erneut laden."
+      : "Bestenliste konnte nicht geladen werden. Bitte erneut versuchen.";
+    retryButton.hidden = false;
+    console.warn("Bestenliste laden fehlgeschlagen:", error);
+  } finally {
+    clearTimeout(timeoutId);
+    if (highscoreLoadController === controller) highscoreLoadController = null;
+  }
 }
 
 function getBestHighscores(list) {
